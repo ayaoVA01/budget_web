@@ -1,10 +1,8 @@
 
-import React, { Component } from "react";
+import React from "react";
 import {
   Layout,
   Menu,
-
-  Typography,
 } from "antd";
 import logo from "../../assets/images/logo.png"
 import { Link } from "react-router-dom";
@@ -36,26 +34,26 @@ const profile = [
 
 const Headers = () => {
   return (
-    <div>
-       <Header className="bg-white mt-5">
+    <div className="top-0 ">
+      <Header className="bg-white mt-5 ">
 
-<div className="header-col header-nav">
-  <Menu mode="horizontal" defaultSelectedKeys={["1"]} className="justify-between">
+        <div className="header-col header-nav">
+          <Menu mode="horizontal" className="justify-between">
 
-    <div className="flex items-center gap-2">
-      <img className="w-[50px] h-[50px] object-cover" src={logo} alt="LOgo" />
-      <h1 className="font-bold text-lg">BUDGET</h1>
-    </div>
+            <div className="flex items-center gap-2" >
+              <img className="w-[50px] h-[50px] object-cover" src={logo} alt="LOgo" />
+              <h1 className="font-bold text-lg">BUDGET</h1>
+            </div>
 
-    <Menu.Item key="2" >
-      <Link to="/profile">
-        {profile}
-      </Link>
-    </Menu.Item>
-  </Menu>
-</div>
+            <Menu.Item  >
+              <Link to="/profile">
+                {profile}
+              </Link>
+            </Menu.Item>
+          </Menu>
+        </div>
 
-</Header>
+      </Header>
     </div>
   )
 }

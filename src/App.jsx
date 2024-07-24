@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import JoinBudget from "./components/Budget/JoinBudget"
 import CreateBudget from "./components/Budget/CreateBudget"
+import BudgetRoom from "./components/Budget/BudgetRoom"
 function App() {
   return (
     <ConfigProvider>
@@ -17,7 +18,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<Home />} />
           <Route path="/create" element={<CreateBudget />} />
-          <Route path="/jion" element={<JoinBudget />} />
+          <Route path="/join" element={<JoinBudget />} />
+          <Route path="/room" element={<BudgetRoom />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

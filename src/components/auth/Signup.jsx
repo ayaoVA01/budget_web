@@ -57,7 +57,7 @@ export default function Signup() {
     }
 
     return (
-        <section className="bg-blue-600/100 lg:h-[40vh] h-[12rem]">
+        <section className="bg-blue-500 lg:h-[40vh] h-[12rem]">
 
             <div className="flex w-full flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
 
