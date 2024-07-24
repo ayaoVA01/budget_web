@@ -1,62 +1,82 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-// import { supabase } from "../../services/supabaseClient";
-import { Button, Form, Input, Switch, } from "antd";
+import { supabase } from "../../services/supabaseClient";
+import { Button, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
-import { createClient } from '@supabase/supabase-js';
-const supabase = createClient("https://fdddlcdxwolqaqtsnkdy.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkZGRsY2R4d29scWFxdHNua2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzNTI2MjgsImV4cCI6MjAzNjkyODYyOH0.5JnJXZkJuCKv5YOLpjxVU6zVnPfAsqe8ixZ80AsCQfo");
-export default function Login() {
+import logo from '../../assets/images/logo.png'
+export default function Signin() {
+    const [error, setError] = useState(false);
+    const [succes, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate();
 
-    // const onFinish = (values) => {
-    //     console.log("Success:", values);
-    // };
-
+    const [fullName, setFullName] = useState('ho');
+    const [email, setEmail] = useState('s@gmail.com');
+    const [password, setPassword] = useState('123');
+    const [confirmPassword, setConfirmPassword] = useState('123');
     const onFinishFailed = (errorInfo) => {
         console.log("Failed:", errorInfo);
     };
-    const handleSubmit = async (values) => {
-        // values.preventDefault();
-        
+    async function handleRegister(e) {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            alert("Passwords do not match");
+            return;
+        }
+        console.log('step1')
         try {
-            const { email, password } = values;
-          
+            console.log('step1', email, password)
             setLoading(true);
-            console.log('step3')
-            const { user, error } = await supabase.auth.signInWithPassword({ email, password });
-            console.log('step3')
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            console.log('log user', data, error)
+
             if (error) throw error;
-            alert('Login successful!');
+
+            // After successful sign-up, store the fullName
+
+
+
         } catch (err) {
-            console.log('err785',err.message || err.error_description);
+            console.log(err.message || err.error_description);
+            if (err.status === 429) {
+                alert('Too many requests. Please try again later.');
+            } else {
+                alert('Registration failed. Please try again later.');
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     return (
-        <section className="bg-gray-50 h-[100vh] w-full dark:bg-gray-900 font-fontFamily">
-            <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+        <section className="bg-blue-600/100 lg:h-[30vh] h-[12rem]">
+
+            <div className="flex  w-full flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+
                 <div className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-                    <img className="w-8 h-8 mr-2" src="" alt="logo" />
-                    Budget
+                    <img className="w-8 h-8 mr-2" src={logo} alt="logo" />
+                    BUDGET
                 </div>
-                <div className="w-full  text-white rounded-lg shadow border md:mt-0 sm:max-w-md xl:p-0 bg-gray-800 border-gray-700">
-                    <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-                        <h1 className="text-xl text-start font-bold leading-tight tracking-tight  md:text-2xl text-white">
+
+                <div className="w-full  md:mt-0 sm:max-w-md xl:p-0">
+                    <div className="p-6 bg-white mb-[3rem] space-y-4 md:space-y-6 sm:p-8 rounded-lg shadow border  border-gray-200">
+                        <h1 className="text-xl text-start font-bold leading-tight tracking-tight  md:text-2xl">
                             Sign In
                         </h1>
-                        <p className="text-sm">Enter you detail for Login website.</p>
+                        <p className='text-sm text-gray-400'>Enter your detail for Sign in.</p>
                         <Form
-                            onFinish={handleSubmit}
+                            onFinish={handleRegister}
                             onFinishFailed={onFinishFailed}
                             layout="vertical"
                             className="row-col"
                         >
+
                             <Form.Item
-                                className=" text-gray-400"
+                                className=" text-white"
                                 label={<span className=" text-gray-400">Email</span>}
                                 name="email"
 
@@ -71,6 +91,9 @@ export default function Login() {
                                     className="w-full p-2.5"
                                 />
                             </Form.Item>
+
+
+
                             <Form.Item
                                 className="username"
                                 label={<span className=" text-gray-400">Password</span>}
@@ -87,6 +110,16 @@ export default function Login() {
                                     className="w-full p-2.5"
                                 />
                             </Form.Item>
+
+
+                            <p className="text-sm font-sm  text-gray-400 mb-4 ">
+                                For got password ?{" "}
+                                <Link to="#" className="font-medium text-blue-500">
+                                    Reset password
+                                </Link>
+                            </p>
+
+
                             <Form.Item>
                                 <Button
                                     type="primary"
@@ -97,10 +130,10 @@ export default function Login() {
                                     Sign In
                                 </Button>
                             </Form.Item>
-                            <p className="text-sm font-sm text-gray-500 dark:text-gray-400">
-                                Don't have an account?{" "}
+                            <p className="text-sm font-sm  text-gray-400">
+                                already have an account?{" "}
                                 <Link to="/" className="font-medium text-blue-500">
-                                    Sign Up
+                                    Sign In
                                 </Link>
                             </p>
                         </Form>

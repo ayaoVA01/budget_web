@@ -10,14 +10,14 @@ const Popup = ({ type = 'success', message, duration = 2000, onClose }) => {
         const timer = setTimeout(() => {
           onClose();
         }, duration);
-    
+
         return () => clearTimeout(timer);
       }, [duration, onClose]);
 
     return (
         <div>
-    
-    
+
+            
                 <div className={`fixed z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4 `}>
                     <div className="relative top-40 mx-auto shadow-xl rounded-md bg-white max-w-md">
 

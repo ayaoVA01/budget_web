@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { supabase } from "../../services/supabaseClient";
 import { Button, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
+import logo from '../../assets/images/logo.png'
 export default function Signup() {
     const [error, setError] = useState(false);
-    const [succes,setSuccess] = useState(false);
+    const [succes, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    
+
     const [fullName, setFullName] = useState('ho');
     const [email, setEmail] = useState('s@gmail.com');
     const [password, setPassword] = useState('123');
@@ -24,7 +25,7 @@ export default function Signup() {
         }
         console.log('step1')
         try {
-            console.log('step1',email,password)
+            console.log('step1', email, password)
             setLoading(true);
             const { data, error } = await supabase.auth.signUp({
                 email,
@@ -56,15 +57,20 @@ export default function Signup() {
     }
 
     return (
-        <section className="bg-gray-50 h-[100vh] w-full dark:bg-gray-900">
-            <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-                <div className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-                    <img className="w-8 h-8 mr-2" src="" alt="logo" />
-                    Budget
+        <section className="bg-blue-600/100 lg:h-[40vh] h-[12rem]">
+
+            <div className="flex w-full flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+
+                <div className="flex items-center lg:mt-[25rem] mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+                    <img className="w-8 h-8 mr-2" src={logo} alt="logo" />
+                    BUDGET
                 </div>
-                <div className="w-full  text-white rounded-lg shadow border md:mt-0 sm:max-w-md xl:p-0 bg-gray-800 border-gray-700">
-                    <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-                        <h1 className="text-xl text-start font-bold leading-tight tracking-tight  md:text-2xl text-white">
+
+
+
+                <div className="w-full  md:mt-0 sm:max-w-md xl:p-0">
+                    <div className="p-6 bg-white mb-[4rem] space-y-4 md:space-y-6 sm:p-8 rounded-lg shadow border  border-gray-200">
+                        <h1 className="text-xl text-start font-bold leading-tight tracking-tight  md:text-2xl">
                             Sign Up
                         </h1>
                         <p className='text-sm text-gray-400'>Enter your detail for Sign up.</p>
@@ -123,7 +129,7 @@ export default function Signup() {
                                 />
                             </Form.Item>
 
-                            
+
                             <Form.Item
                                 className="username"
                                 label={<span className=" text-gray-400">Password</span>}
@@ -173,7 +179,7 @@ export default function Signup() {
                                 </Button>
                             </Form.Item>
                             <p className="text-sm font-sm  text-gray-400">
-                               already have an account?{" "}
+                                already have an account?{" "}
                                 <Link to="/login" className="font-medium text-blue-500">
                                     Sign In
                                 </Link>
