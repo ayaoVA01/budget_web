@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom"
 import Popup from '../popup/Popup';
-import { useState } from 'react';
+
 import {
   Button,
   Form,
@@ -11,7 +11,9 @@ import {
 import {
   LeftCircleTwoTone
 } from "@ant-design/icons";
+
 const CreateBuget = () => {
+  const [success, setsucces] = useState(true)
   const [form] = Form.useForm();
 
   const handleReset = () => {
@@ -30,6 +32,15 @@ const CreateBuget = () => {
             </Link>
             <div className='lg:flex sm-max:flex-col gap-2 justify-center'>
 
+              {/* Show creat success popup */}
+              {success === true ? (
+                <Popup
+                  message='Create Successfully!'
+                  Scretkey='HSDUFHD'
+                  type='success'
+                />
+
+              ) : ''}
 
               <div className='w-full '>
 
@@ -92,24 +103,27 @@ const CreateBuget = () => {
                     className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none   focus:ring-0 focus:outline-none outline-none"
                   />
                 </Form.Item>
-                <div className='flex gap-2 items-center float-end'>
-                  <Form.Item>
-                    <button onClick={handleReset}
-                      htmlType="submit"
-                      className="w-full text-white p-[14px] rounded-md px-[4rem]  font-medium bg-orange-600 hover:bg-orange-500"
-                    >
-                      Reset
-                    </button>
-                  </Form.Item>
-                  <Form.Item className='ml-[2rem]'>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      className="w-full p-5 font-medium px-[4rem] "
-                    >
-                      Submit
-                    </Button>
-                  </Form.Item>
+                <div className='w-full text-center md:float-end '>
+                  <div className='flex gap-2 items-center justify-center'>
+
+                    <Form.Item>
+                      <button onClick={handleReset}
+                        htmlType="submit"
+                        className=" text-white p-[14px] rounded-md px-[4rem]  font-medium bg-orange-600 hover:bg-orange-500"
+                      >
+                        Reset
+                      </button>
+                    </Form.Item>
+                    <Form.Item className=''>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        className="p-5 font-medium px-[4rem] "
+                      >
+                        Submit
+                      </Button>
+                    </Form.Item>
+                  </div>
                 </div>
               </Form>
 

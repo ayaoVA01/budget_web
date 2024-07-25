@@ -4,9 +4,11 @@ import { supabase } from "../../services/supabaseClient";
 import { Button, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import logo from '../../assets/images/logo.png'
+
+import ResjisterSuccess from "./ResjisterSuccess";
 export default function Signup() {
     const [error, setError] = useState(false);
-    const [succes, setSuccess] = useState(false);
+    const [succes, setSuccess] = useState(true);
     const [loading, setLoading] = useState(false);
 
 
@@ -58,6 +60,14 @@ export default function Signup() {
 
     return (
         <section className="bg-blue-500 lg:h-[40vh] h-[12rem]">
+
+            {succes ? (
+                <ResjisterSuccess
+                message='Rejister Success!'
+                type='success'
+
+                />
+            ): ''}
 
             <div className="flex w-full flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
 

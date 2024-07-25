@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom"
 import Popup from '../popup/Popup';
+
 import {
   Button,
   Form,
@@ -11,10 +12,10 @@ import {
   LeftCircleTwoTone
 } from "@ant-design/icons";
 
-const JoinBuget = () => {
-
-  // for reset form
+const ChangePassword = () => {
+  const [success, setsucces] = useState(false)
   const [form] = Form.useForm();
+
   const handleReset = () => {
     form.resetFields();
   };
@@ -30,12 +31,23 @@ const JoinBuget = () => {
               back
             </Link>
             <div className='lg:flex sm-max:flex-col gap-2 justify-center'>
+
+              {/* Show success popup */}
+              {success === true ? (
+                <Popup
+                  message='Update password Successfully!'
+                
+                  type='success'
+                />
+
+              ) : ''}
+
               <div className='w-full '>
 
                 <h1 className="text-xl pt-2 text-start font-bold leading-tight tracking-tight  md:text-2xl">
-                  Join Budget
+                  Update Password
                 </h1>
-                <p className='text-sm text-gray-400 mt-2 mb-5'>Pase your SCRETKEY for join your budget.</p>
+                <p className='text-sm text-gray-400 mt-2 mb-5'>Enter Your old password and put the new password</p>
               </div>
               <Form
                 form={form}
@@ -46,8 +58,8 @@ const JoinBuget = () => {
               >
                 <Form.Item
                   className=" text-gray-400"
-                  label={<span className=" text-gray-400">SCRETKEY</span>}
-                  name="budgetname"
+                  label={<span className=" text-gray-400">Old password</span>}
+                  name="oldpassword"
 
                   rules={[
                     {
@@ -56,14 +68,44 @@ const JoinBuget = () => {
                     },
                   ]}
                 >
-                  <Input id="budgetname" placeholder="ND56FNJFNJ . FDSJFJDF "
+                  <Input id="budgetname" placeholder="old password "
                     className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none   focus:ring-0 focus:outline-none outline-none"
                   />
                 </Form.Item>
+                <Form.Item
+                  className=" text-white"
+                  label={<span className=" text-gray-400">New password</span>}
+                  name="newpassword"
 
-
-                <div className='w-full text-center md:float-end'>
+                  rules={[
+                    {
+                      required: true,
+                      message: " ",
+                    },
+                  ]}
+                >
+                  <Input id="newpassword" placeholder="*******"
+                    className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none   focus:ring-0 focus:outline-none outline-none"
+                  />
+                </Form.Item>
+                <Form.Item
+                  className=" text-gray-400"
+                  label={<span className=" text-gray-400">Comfirm password</span>}
+                  name="comfirmpassword"
+                  rules={[
+                    {
+                      required: true,
+                      message: " ",
+                    },
+                  ]}
+                >
+                  <Input id="comfirmpassword"  placeholder="*******"
+                    className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none   focus:ring-0 focus:outline-none outline-none"
+                  />
+                </Form.Item>
+                <div className='w-full text-center md:float-end '>
                   <div className='flex gap-2 items-center justify-center'>
+
                     <Form.Item>
                       <button onClick={handleReset}
                         htmlType="submit"
@@ -72,12 +114,11 @@ const JoinBuget = () => {
                         Reset
                       </button>
                     </Form.Item>
-                    <Form.Item className='ml-[2rem]'>
+                    <Form.Item className=''>
                       <Button
-
                         type="primary"
                         htmlType="submit"
-                        className="w-full p-5 font-medium px-[4rem] "
+                        className="p-5 font-medium px-[4rem] "
                       >
                         Submit
                       </Button>
@@ -95,4 +136,4 @@ const JoinBuget = () => {
   )
 }
 
-export default JoinBuget
+export default ChangePassword
