@@ -1,21 +1,17 @@
-import { Navigate,Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "../../services/supabaseClient";
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext'; // Adjust the path as necessary
 
+const PrivateRoute = ({ element }) => {
+  const { user } = useAuth();
 
-import React from 'react'
+  if (!user) {
+    // User is not authenticated, redirect to login page
+    return <Navigate to="/login" />;
+  }
 
-const PrivateRoute = ({element:Element, ...rest}) => {
-    const [auth,setAuth]= useState(false);
-    useEffect(()=>{
-        const session = supabase.auth.session();
-        setAuth(!!session);
-        supabase.auth.onAuthStateChange((_event, session)=>{
-            setAuth(!!session);
+  // User is authenticated, render the component
+  return element;
+};
 
-        });
-    },[]);
-  return auth ? <Outlet /> : <Navigate to="/login" />;
-}
-
-export default PrivateRoute
+export default PrivateRoute;
