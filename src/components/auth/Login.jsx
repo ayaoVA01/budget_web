@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../../services/supabaseClient";
 import { Button, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import logo from '../../assets/images/logo.png'
@@ -27,10 +26,10 @@ export default function Signin() {
         try {
             console.log('step1', email, password)
             setLoading(true);
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+            // const { data, error } = await supabase.auth.signInWithPassword({
+            //     email,
+            //     password,
+            // });
 
             console.log('log user', data, error)
 

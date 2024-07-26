@@ -13,8 +13,16 @@ import {
 } from "@ant-design/icons";
 
 const ChangePassword = () => {
-  const [success, setsucces] = useState(false)
+  const [success, setSucces] = useState(true);
   const [form] = Form.useForm();
+  // for popup function 
+  const handlePopupClose = () => {
+    setSucces(false);
+  };
+  const triggerPopup = () => {
+    setSucces(true);
+  };
+
 
   const handleReset = () => {
     form.resetFields();
@@ -33,14 +41,15 @@ const ChangePassword = () => {
             <div className='lg:flex sm-max:flex-col gap-2 justify-center'>
 
               {/* Show success popup */}
-              {success === true ? (
+              {success && (
                 <Popup
-                  message='Update password Successfully!'
-                
-                  type='success'
-                />
+                  type="success"
+                  message="Update password successfully!"
+                  duration={2000}
+                  onClose={handlePopupClose}
 
-              ) : ''}
+                />
+              )}
 
               <div className='w-full '>
 
@@ -99,7 +108,7 @@ const ChangePassword = () => {
                     },
                   ]}
                 >
-                  <Input id="comfirmpassword"  placeholder="*******"
+                  <Input id="comfirmpassword" placeholder="*******"
                     className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none   focus:ring-0 focus:outline-none outline-none"
                   />
                 </Form.Item>
@@ -107,12 +116,12 @@ const ChangePassword = () => {
                   <div className='flex gap-2 items-center justify-center'>
 
                     <Form.Item>
-                      <button onClick={handleReset}
+                      <Button onClick={handleReset}
                         htmlType="submit"
-                        className=" text-white p-[14px] rounded-md px-[4rem]  font-medium bg-orange-600 hover:bg-orange-500"
+                        className=" text-white py-5 p-[14px] rounded-md px-[4rem]  font-medium bg-orange-600 hover:bg-orange-500"
                       >
                         Reset
-                      </button>
+                      </Button>
                     </Form.Item>
                     <Form.Item className=''>
                       <Button

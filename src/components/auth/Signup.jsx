@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../../services/supabaseClient";
 import { Button, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import logo from '../../assets/images/logo.png'
@@ -16,6 +15,13 @@ export default function Signup() {
     const [email, setEmail] = useState('s@gmail.com');
     const [password, setPassword] = useState('123');
     const [confirmPassword, setConfirmPassword] = useState('123');
+    // for popup 
+    const handlePopupClose = () => {
+        setSuccess(false);
+    };
+    const triggerPopup = () => {
+        setSuccess(true);
+    };
     const onFinishFailed = (errorInfo) => {
         console.log("Failed:", errorInfo);
     };
@@ -29,19 +35,19 @@ export default function Signup() {
         try {
             console.log('step1', email, password)
             setLoading(true);
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-            });
+            // const { data, error } = await supabase.auth.signUp({
+            //     email,
+            //     password,
+            // });
             console.log('log user', data, error)
 
             if (error) throw error;
 
             // After successful sign-up, store the fullName
-            const { data: profileData, error: updateError } = await supabase
-                .from('users') // Ensure you have a 'users' table
-                .insert([{ full_name: fullName, email }])
-                .select();
+            // const { data: profileData, error: updateError } = await supabase
+            //     .from('users') // Ensure you have a 'users' table
+            //     .insert([{ full_name: fullName, email }])
+            //     .select();
 
             if (updateError) throw updateError;
 
@@ -61,13 +67,15 @@ export default function Signup() {
     return (
         <section className="bg-blue-500 lg:h-[40vh] h-[12rem]">
 
-            {succes ? (
+            {succes && (
                 <ResjisterSuccess
-                message='Rejister Success!'
-                type='success'
+                    type="success"
+                    message="Sign up successfully!"
+                    duration={2000}
+                    onClose={handlePopupClose}
 
                 />
-            ): ''}
+            )}
 
             <div className="flex w-full flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
 

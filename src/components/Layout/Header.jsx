@@ -33,27 +33,39 @@ const ProfilePopover = () => (
   />
 );
 
+const menuItems = [
+  {
+    label: (
+      <div className="flex items-center gap-2">
+        <img className="w-[50px] h-[50px] object-cover" src={logo} alt="Logo" />
+        <h1 className="font-bold text-lg">BUDGET</h1>
+      </div>
+    ),
+    key: 'logo',
+  },
+  {
+    label: (
+      <>
+        <Button type="text" onClick={openNotification} className="mx-3">
+          <BellOutlined style={{ fontSize: '20px' }} />
+        </Button>
+        <Popover content={<ProfilePopover />} title="Profile" trigger="click">
+          <Button type="text">
+            <UserOutlined style={{ fontSize: '24px' }} />
+          </Button>
+        </Popover>
+      </>
+    ),
+    key: 'actions',
+  },
+];
+
 const Headers = () => {
   return (
     <div className="top-0">
       <Header className="bg-white mt-5">
         <div className="header-col header-nav">
-          <Menu mode="horizontal" className="justify-around">
-            <div className="flex items-center gap-2">
-              <img className="w-[50px] h-[50px] object-cover" src={logo} alt="Logo" />
-              <h1 className="font-bold text-lg">BUDGET</h1>
-            </div>
-            <div className="">
-              <Button type="text" onClick={openNotification} className="mx-3">
-                <BellOutlined style={{ fontSize: '20px' }} />
-              </Button>
-              <Popover content={<ProfilePopover />} title="Profile" trigger="click">
-                <Button type="text">
-                  <UserOutlined style={{ fontSize: '24px' }} />
-                </Button>
-              </Popover>
-            </div>
-          </Menu>
+          <Menu mode="horizontal" className="justify-around" items={menuItems} />
         </div>
       </Header>
     </div>

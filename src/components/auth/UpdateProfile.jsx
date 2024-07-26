@@ -4,24 +4,28 @@ import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
 import { Button, Form, Input, Upload } from "antd";
 import { LeftCircleTwoTone, UploadOutlined } from "@ant-design/icons";
-import avatar from "../../assets/images/stickman.webp"
+import avatar from "../../assets/images/stickman.webp";
 import logo from '../../assets/images/logo.png';
 
 const UpdateProfile = () => {
-    const [success, setSucces] = useState(true);
+    const [success, setSuccess] = useState(true);
     const [form] = Form.useForm();
     const [imageUrl, setImageUrl] = useState(logo); // Initial image URL
     const [imageName, setImageName] = useState('');
+    
     const handleReset = () => {
         form.resetFields();
         setImageUrl(avatar); // Reset to initial image URL
         setImageName(''); // Reset image name
     };
+
+    // for pop up function
     const handlePopupClose = () => {
-        setSucces(false);
+        setSuccess(false);
     };
+
     const triggerPopup = () => {
-        setSucces(true);
+        setSuccess(true);
     };
 
     const handleImageChange = info => {
@@ -53,18 +57,15 @@ const UpdateProfile = () => {
                             back
                         </Link>
                         <div className='lg:flex sm-max:flex-col gap-2 justify-center'>
-                            
                             {success && (
                                 <Popup
                                     type="success"
                                     message="Operation completed successfully!"
                                     duration={2000}
                                     onClose={handlePopupClose}
-                                    
                                 />
                             )}
-
-                            <div className='w-full '>
+                            <div className='w-full'>
                                 <h1 className="text-xl pt-2 text-start font-bold leading-tight tracking-tight md:text-2xl">
                                     Update Profile
                                 </h1>
@@ -92,10 +93,6 @@ const UpdateProfile = () => {
                                     >
                                         <Button icon={<UploadOutlined />}>Upload</Button>
                                     </Upload>
-                                    {/* <div className="mt-2">
-                                        <img src={imageUrl} alt="Profile" className="border rounded" style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
-                                    </div> */}
-
                                 </Form.Item>
                                 <Form.Item
                                     className="text-gray-400"
@@ -136,13 +133,13 @@ const UpdateProfile = () => {
                                 <div className='w-full text-center md:float-end'>
                                     <div className='flex gap-2 items-center justify-center'>
                                         <Form.Item>
-                                            <button
+                                            <Button
                                                 onClick={handleReset}
                                                 htmlType="button"
-                                                className="text-white p-[14px] rounded-md px-[4rem] font-medium bg-orange-600 hover:bg-orange-500"
+                                                className="text-white py-5 p-[14px] rounded-md px-[4rem] font-medium bg-orange-600 hover:bg-orange-500"
                                             >
                                                 Reset
-                                            </button>
+                                            </Button>
                                         </Form.Item>
                                         <Form.Item>
                                             <Button
