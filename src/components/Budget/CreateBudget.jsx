@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
+import PopupBudgetKey from '../popup/PopupSecretKey';
 import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
 import { supabase } from "../../services/supabaseClient";
+import { encodeKey } from "../../utils/BudgetRoomSecrete";
+import { data } from 'autoprefixer';
 
 const CreateBudget = () => {
   const [form] = Form.useForm();
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState({ success: false, id: null });
   const [error, setError] = useState(null);
 
   const handleReset = () => {
@@ -16,21 +19,24 @@ const CreateBudget = () => {
   };
 
   const handlePopupClose = () => {
-    setSuccess(false);
+    setSuccess({ success: false, id: null });
     setError(null);
   };
 
   const onFinish = async (values) => {
+    console.log({ values })
     const { budgetname, budget, description } = values;
 
     const { data, error } = await supabase
       .from('budget')
-      .insert([{ name: budgetname, budget: parseFloat(budget), description }]);
+      .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description }])
+      .select();
 
+    console.log({ data })
     if (error) {
       setError(error.message);
     } else {
-      setSuccess(true);
+      setSuccess({ success: true, id: data[0].id });
       handleReset();
     }
   };
@@ -45,11 +51,11 @@ const CreateBudget = () => {
             back
           </Link>
           <div className='lg:flex sm-max:flex-col gap-2 justify-center'>
-            {success && (
-              <Popup
+            {success.success && (
+              <PopupBudgetKey
                 message='Create Successfully!'
                 type='success'
-                duration={3000}
+                Scretkey={encodeKey(success.id)}
                 onClose={handlePopupClose}
               />
             )}
