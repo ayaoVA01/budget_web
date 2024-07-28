@@ -4,9 +4,13 @@ import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
 import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
+<<<<<<< HEAD
 import { decodeKey } from '../../utils/BudgetRoomSecrete';
 import { useNavigate } from 'react-router-dom';
 
+=======
+import Footer from '../Layout/Footer';
+>>>>>>> f2ced21d8385553293c91adea92b3701aba9d8e5
 const JoinBuget = () => {
   const [success, setSucces] = useState(true);
 
@@ -44,11 +48,11 @@ const JoinBuget = () => {
   };
 
   return (
-    <div>
+    <div className='w-full h-full flex-col'>
       <Headers />
       <div>
-        <div className="w-full mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
-          <div className="p-6 w-full bg-white mb-[4rem] space-y-4 sm:p-8 rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200">
+        <div className="w-full h-full mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
+          <div className="p-6 w-full bg-white  space-y-4 sm:p-8 rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200">
             <Link to='/home' className='flex gap-2 text-gray-500'>
               <LeftCircleTwoTone />
               back
@@ -120,6 +124,7 @@ const JoinBuget = () => {
           </div>
         </div>
       </div>
+      <Footer className=''/>
     </div>
   )
 }

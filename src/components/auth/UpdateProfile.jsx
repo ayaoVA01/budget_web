@@ -1,33 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Headers from '../Layout/Header';
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import Popup from '../popup/Popup';
-import { Button, Form, Input, Upload } from "antd";
-import { LeftCircleTwoTone, UploadOutlined } from "@ant-design/icons";
-import avatar from "../../assets/images/stickman.webp";
+import { Button, Form, Input, Upload, notification } from 'antd';
+import { LeftCircleTwoTone, UploadOutlined } from '@ant-design/icons';
+import avatar from '../../assets/images/stickman.webp';
 import logo from '../../assets/images/logo.png';
-
+import { supabase } from '../../services/supabaseClient'; // Ensure you have the correct path
 const UpdateProfile = () => {
-    const [success, setSuccess] = useState(true);
+    const [success, setSuccess] = useState(false);
     const [form] = Form.useForm();
     const [imageUrl, setImageUrl] = useState(logo); // Initial image URL
     const [imageName, setImageName] = useState('');
-    
+
+    // Handle form reset
     const handleReset = () => {
         form.resetFields();
         setImageUrl(avatar); // Reset to initial image URL
         setImageName(''); // Reset image name
     };
 
-    // for pop up function
+    // Handle popup close
     const handlePopupClose = () => {
         setSuccess(false);
     };
 
+    // Trigger popup
     const triggerPopup = () => {
         setSuccess(true);
     };
 
+    // Handle image change
     const handleImageChange = info => {
         const file = info.file.originFileObj;
         const reader = new FileReader();
@@ -40,11 +43,64 @@ const UpdateProfile = () => {
         reader.readAsDataURL(file);
     };
 
-    const initialValues = {
-        fullname: 'John Doe',
-        phone: '1234567890',
-        email: 'john.doe@example.com',
+    // Load initial user data
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log(session.user.email, 'seasion')
+            if (session) {
+                const userId = session.user.id;
+              
+                const { data, error } = await supabase
+                    .from('users')
+                    .select()
+                    // .eq('id', userId)
+
+                console.log(data, 'hahah data')
+                if (error) {
+                    console.error('Error fetching user data:', error);
+                } else {
+                    setUser(data);
+                    // console.log('hhdusdus data', data)
+                    form.setFieldsValue({
+                        full_name: data.full_name,
+                        phone: data.phone,
+                        email: session.user.email, // Email is managed by Supabase Auth
+                    });
+                }
+            }
+        };
+
+        fetchUserData();
+    }, [form]);
+
+    // Handle form submission
+    const handleSubmit = async (values) => {
+        const { full_name, phone } = values;
+        console.log('valua', values)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            console.log('step1')
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .upsert({ id: user.id, full_name, phone }, { onConflict: ['id'] });
+                console.log(data)
+                if (error) {
+                    throw error;
+                }
+
+                notification.success({ message: 'Profile updated successfully!' });
+            } catch (err) {
+                console.error('Error updating profile:', err.message || err.error_description);
+                notification.error({ message: 'Profile update failed. Please try again later.' });
+            }
+        } else {
+            notification.error({ message: 'User not authenticated.' });
+        }
     };
+
 
     return (
         <div>
@@ -73,8 +129,8 @@ const UpdateProfile = () => {
                             </div>
                             <Form
                                 form={form}
-                                initialValues={initialValues}
                                 layout="vertical"
+                                onFinish={handleSubmit}
                                 className="row-col w-full"
                             >
                                 <Form.Item
@@ -122,12 +178,13 @@ const UpdateProfile = () => {
                                     className="text-gray-400"
                                     label={<span className="text-gray-400">Email</span>}
                                     name="email"
-                                    rules={[{ required: true, message: "Please enter your email" }]}
+                                    rules={[{ required: false, message: "Please enter your email" }]}
                                 >
                                     <Input
                                         id="email"
                                         placeholder="example@gmail.com"
                                         className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none"
+                                        disabled
                                     />
                                 </Form.Item>
                                 <div className='w-full text-center md:float-end'>
@@ -143,6 +200,7 @@ const UpdateProfile = () => {
                                         </Form.Item>
                                         <Form.Item>
                                             <Button
+
                                                 type="primary"
                                                 htmlType="submit"
                                                 className="p-5 font-medium px-[4rem]"

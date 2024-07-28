@@ -13,19 +13,21 @@ import ChangePassword from './components/auth/ChangePassword';
 import UpdateProfile from './components/auth/UpdateProfile';
 import { AuthProvider } from './components/common/AuthContext';
 import PrivateRoute from './components/common/PrivateRoute';
+// import Footer from './components/Layout/Footer';
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/" element={<Login />} />
           <Route path="/change-password" element={<PrivateRoute element={<ChangePassword />} />} />
           <Route path="/update-profile" element={<PrivateRoute element={<UpdateProfile />} />} />
           <Route path="/home" element={<PrivateRoute element={<Home />} />} />
           <Route path="/create" element={<PrivateRoute element={<CreateBudget />} />} />
           <Route path="/join" element={<PrivateRoute element={<JoinBudget />} />} />
           <Route path="/room" element={<PrivateRoute element={<BudgetRoom />} />} />
+          {/* <Route path="/footer" element={<PrivateRoute element={<Footer />} />} /> */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

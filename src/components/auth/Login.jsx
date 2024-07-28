@@ -22,6 +22,7 @@ export default function Signin() {
             if (error) {
                 throw error;
             }
+            console.log(data)
 
             notification.success({
                 message: 'Login Successful',
@@ -123,8 +124,8 @@ export default function Signin() {
                         </Form.Item>
                         <p className="text-sm font-sm  text-gray-400">
                             already have an account?{" "}
-                            <Link to="/" className="font-medium text-blue-500">
-                                Sign In
+                            <Link to="/signup" className="font-medium text-blue-500">
+                                Sign Up
                             </Link>
                         </p>
                     </Form>

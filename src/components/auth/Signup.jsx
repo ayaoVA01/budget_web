@@ -4,6 +4,7 @@ import { Button, Form, Input } from "antd";
 import { supabase } from "../../services/supabaseClient";
 import logo from '../../assets/images/logo.png';
 import ResjisterSuccess from './ResjisterSuccess';
+import { data } from "autoprefixer";
 
 export default function Signup() {
     const [error, setError] = useState(null);
@@ -32,8 +33,8 @@ export default function Signup() {
             setLoading(false);
             return;
         }
-
         try {
+            // Sign up user
             const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
@@ -44,32 +45,73 @@ export default function Signup() {
             }
 
             const user = signUpData.user;
+            console.log(user)
 
             if (!user) {
                 throw new Error('User data is missing.');
             }
 
-            // Step 2: Insert additional user data into the 'users' table
-            const { data: insertData, error: insertError } = await supabase
-                .from('users')
-                .insert([{ id: user.id, full_name, phone }]);
+            // Update user metadata
+            const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+                data: {
+                    full_name,
+                    phone,
+                },
+            });
 
-            if (insertError) {
-                throw insertError;
+            if (updateError) {
+                throw updateError;
             }
 
-            triggerPopup();
-            setTimeout(() => {
-                handlePopupClose();
-                navigate("/login");
-            }, 2000);
+            console.log('User updated successfully:', updateData);
+            // Redirect or perform other actions after successful signup and update
 
         } catch (err) {
             console.error(err.message || err.error_description);
             alert('Registration failed. Please try again later.');
-        } finally {
-            setLoading(false);
         }
+
+        // try {
+        //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        //         email,
+        //         password,
+        //     });
+
+        //     if (signUpError) {
+        //         throw signUpError;
+        //     }
+
+        //     const user = signUpData.user;
+
+        //     console.log({ user })
+        //     console.log({ user: user.id })
+        //     if (!user) {
+        //         throw new Error('User data is missing.');
+        //     }
+
+        //     const { data: updateData, error: updateError } = await supabase
+        //         .from('aut.users')
+        //         .update({ full_name, phone })
+        //         .eq('id', user.id);
+
+        //     if (updateError) {
+        //         console.log("error: ", updateError);
+        //         throw updateError;
+        //     }
+        //     console.log({ data: updateData })
+
+        //     triggerPopup();
+        //     setTimeout(() => {
+        //         handlePopupClose();
+        //         navigate("/login");
+        //     }, 2000);
+
+        // } catch (err) {
+        //     console.error(err.message || err.error_description);
+        //     alert('Registration failed. Please try again later.');
+        // } finally {
+        //     setLoading(false);
+        // }
     };
     return (
         <section className="bg-blue-500 lg:h-[40vh] h-[12rem]">
@@ -153,7 +195,7 @@ export default function Signup() {
                             </Form.Item>
                             <p className="text-sm font-sm text-gray-400">
                                 Already have an account?{" "}
-                                <Link to="/login" className="font-medium text-blue-500">
+                                <Link to="/" className="font-medium text-blue-500">
                                     Sign In
                                 </Link>
                             </p>
