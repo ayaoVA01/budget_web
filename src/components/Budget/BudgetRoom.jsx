@@ -7,6 +7,7 @@ import {
   PlusCircleFilled,
   LeftCircleTwoTone
 } from "@ant-design/icons";
+import { supabase } from '../../services/supabaseClient';
 
 const { Option } = Select;
 
@@ -16,6 +17,7 @@ const ButgetRoom = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isUserRole, setUserRole] = useState(false);
+  const [users, setUsers] = useState([]);
 
   // for reset form
   const [form] = Form.useForm();
@@ -50,6 +52,22 @@ const ButgetRoom = () => {
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase.auth.admin.listUsers();
+      if (error) {
+        console.error(error);
+      } else {
+        console.log({ data })
+        setUsers(data.users);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  fetchUsers();
+
 
   return (
     <div className='px-5 lg:max-w-[70rem] mx-auto'>

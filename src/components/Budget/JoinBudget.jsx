@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
 import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
+import { decodeKey } from '../../utils/BudgetRoomSecrete';
+import { useNavigate } from 'react-router-dom';
 
 const JoinBuget = () => {
   const [success, setSucces] = useState(true);
@@ -13,15 +15,34 @@ const JoinBuget = () => {
   const handleReset = () => {
     form.resetFields();
   };
-  
+
   // for popup function
   const handlePopupClose = () => {
-    setSucces(false);
+    setSucces(true);
   };
   const triggerPopup = () => {
     setSucces(true);
   };
-  
+
+  const onFinish = async (values) => {
+    console.log({ values })
+    const { secretkey } = values;
+
+    const roomId = decodeKey(secretkey);
+    const { data, error } = await supabase
+      .from('budget')
+      .select()
+      .eq('id', roomId)
+
+    if (data) {
+      console.log(data)
+      useNavigate('/home')
+      handleReset();
+    } else {
+      setError(error.message);
+    }
+  };
+
   return (
     <div>
       <Headers />
@@ -68,6 +89,7 @@ const JoinBuget = () => {
                     id="budgetname"
                     placeholder="ND56FNJFNJ . FDSJFJDF"
                     className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none"
+                    onFinish={onFinish}
                   />
                 </Form.Item>
 
