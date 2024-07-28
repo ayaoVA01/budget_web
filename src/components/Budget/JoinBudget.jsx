@@ -4,13 +4,10 @@ import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
 import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
-<<<<<<< HEAD
 import { decodeKey } from '../../utils/BudgetRoomSecrete';
 import { useNavigate } from 'react-router-dom';
 
-=======
 import Footer from '../Layout/Footer';
->>>>>>> f2ced21d8385553293c91adea92b3701aba9d8e5
 const JoinBuget = () => {
   const [success, setSucces] = useState(true);
 
@@ -124,7 +121,7 @@ const JoinBuget = () => {
           </div>
         </div>
       </div>
-      <Footer className=''/>
+      <Footer className='' />
     </div>
   )
 }
