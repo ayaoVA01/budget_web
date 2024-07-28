@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import Popup from '../popup/Popup';
 import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
-
+import Footer from '../Layout/Footer';
 const CreateBuget = () => {
   const [success, setSucces] = useState(true);
   const [form] = Form.useForm();
@@ -23,16 +23,19 @@ const CreateBuget = () => {
   };
 
   return (
-    <div>
+    <>
+    
+    <div className='w-full'>
       <Headers />
       <div>
-        <div className="w-full mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
-          <div className="p-6 w-full bg-white mb-[4rem] space-y-4 sm:p-8 rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200">
+        <div className="w-full   md:mt-0 xl:p-0">
+          <div className="p-6 w-full bg-white   sm:p-8 rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200">
             <Link to='/home' className='flex gap-2 text-gray-500'>
               <LeftCircleTwoTone />
               back
             </Link>
-            <div className='lg:flex sm-max:flex-col gap-2 justify-center'>
+            <div className='lg:flex sm-max:flex-col  gap-2 justify-center'>
+
 
               {/* Show creat success popup */}
               {success && (
@@ -51,6 +54,7 @@ const CreateBuget = () => {
                 </h1>
                 <p className='text-sm text-gray-400 mt-2 mb-5'>Enter details for create your buget</p>
               </div>
+
               <Form
                 form={form}
                 layout="vertical"
@@ -107,7 +111,7 @@ const CreateBuget = () => {
                     className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none"
                   />
                 </Form.Item>
-                <div className='w-full text-center md:float-end '>
+                <div className='w-full text-center md:float-end'>
                   <div className='flex gap-2 items-center justify-center'>
 
                     <Form.Item>
@@ -136,7 +140,10 @@ const CreateBuget = () => {
           </div>
         </div>
       </div>
+
     </div>
+      <Footer />
+    </>
   )
 }
 

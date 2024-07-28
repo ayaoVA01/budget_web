@@ -5,12 +5,14 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch the initial session
     const fetchSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
+      setLoading(false);
     };
 
     fetchSession();
@@ -18,9 +20,10 @@ export const AuthProvider = ({ children }) => {
     // Subscribe to auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
-    // Ensure cleanup, but log if `unsubscribe` is not available
+    // Ensure cleanup
     return () => {
       if (authListener?.unsubscribe) {
         authListener.unsubscribe();
@@ -31,7 +34,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );

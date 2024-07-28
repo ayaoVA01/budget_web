@@ -20,7 +20,7 @@ const Headers = () => {
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
-    
+
     if (error) {
       notification.error({
         message: 'Logout Failed',
@@ -31,7 +31,7 @@ const Headers = () => {
         message: 'Logout Successful',
         description: 'You have been logged out successfully.',
       });
-      navigate('/login'); // Redirect to login page
+      navigate('/'); // Redirect to login page
     }
   };
 
@@ -72,7 +72,7 @@ const Headers = () => {
     {
       label: (
         <>
-          <Button type="text" onClick={openNotification} className="mx-3">
+          <Button type="text" onClick={openNotification} className="mx-3" >
             <BellOutlined style={{ fontSize: '20px' }} />
           </Button>
           <Popover content={<ProfilePopover />} title="Profile" trigger="click">
