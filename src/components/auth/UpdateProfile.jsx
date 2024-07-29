@@ -12,13 +12,14 @@ const UpdateProfile = () => {
     const [form] = Form.useForm();
     const [imageUrl, setImageUrl] = useState(logo); // Initial image URL
     const [imageName, setImageName] = useState('');
+    const [users, setUsers] = useState([]);
 
     // Handle form reset
-    const handleReset = () => {
-        form.resetFields();
-        setImageUrl(avatar); // Reset to initial image URL
-        setImageName(''); // Reset image name
-    };
+    // const handleReset = () => {
+    //     form.resetFields();
+    //     setImageUrl(avatar); // Reset to initial image URL
+    //     setImageName(''); // Reset image name
+    // };
 
     // Handle popup close
     const handlePopupClose = () => {
@@ -48,26 +49,30 @@ const UpdateProfile = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            console.log(session.user.email, 'seasion')
             if (session) {
                 const userId = session.user.id;
-              
-                const { data, error } = await supabase
-                    .from('users')
-                    .select()
-                    // .eq('id', userId)
 
-                console.log(data, 'hahah data')
-                if (error) {
-                    console.error('Error fetching user data:', error);
-                } else {
-                    setUser(data);
-                    // console.log('hhdusdus data', data)
-                    form.setFieldsValue({
-                        full_name: data.full_name,
-                        phone: data.phone,
-                        email: session.user.email, // Email is managed by Supabase Auth
-                    });
+                try {
+                    // const { data, error } = await supabase.auth.users.listUsers();
+                    const { data, error } = await supabase
+                        .from('user_profile')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .single();
+
+                    if (error) {
+                        console.error(error);
+                    } else {
+                        setUsers(data);
+                        console.log({ data: data })
+                        form.setFieldsValue({
+                            full_name: data.full_name,
+                            phone: data.phone,
+                            email: session.user.email, // Email is managed by Supabase Auth
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error fetching users:', error);
                 }
             }
         };
@@ -153,11 +158,11 @@ const UpdateProfile = () => {
                                 <Form.Item
                                     className="text-gray-400"
                                     label={<span className="text-gray-400">Full name</span>}
-                                    name="fullname"
+                                    name="full_name"
                                     rules={[{ required: true, message: "Please enter your full name" }]}
                                 >
                                     <Input
-                                        id="fullname"
+                                        id="full_name"
                                         placeholder="Full name"
                                         className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none"
                                     />
@@ -190,13 +195,15 @@ const UpdateProfile = () => {
                                 <div className='w-full text-center md:float-end'>
                                     <div className='flex gap-2 items-center justify-center'>
                                         <Form.Item>
-                                            <Button
-                                                onClick={handleReset}
-                                                htmlType="button"
-                                                className="text-white py-5 p-[14px] rounded-md px-[4rem] font-medium bg-orange-600 hover:bg-orange-500"
-                                            >
-                                                Reset
-                                            </Button>
+                                            <Link to='/home'>
+                                                <Button
+                                                    // onClick={handleReset}
+                                                    htmlType="button"
+                                                    className="text-white py-5 p-[14px] rounded-md px-[4rem] font-medium bg-orange-600 hover:bg-orange-500"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </Link>
                                         </Form.Item>
                                         <Form.Item>
                                             <Button

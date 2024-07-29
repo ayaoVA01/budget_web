@@ -4,7 +4,6 @@ import { Button, Form, Input } from "antd";
 import { supabase } from "../../services/supabaseClient";
 import logo from '../../assets/images/logo.png';
 import ResjisterSuccess from './ResjisterSuccess';
-import { data } from "autoprefixer";
 
 export default function Signup() {
     const [error, setError] = useState(null);
@@ -22,6 +21,7 @@ export default function Signup() {
 
     const onFinishFailed = (errorInfo) => {
         console.log("Failed:", errorInfo);
+        setLoading(false);
     };
 
     const handleRegister = async (values) => {
@@ -37,7 +37,7 @@ export default function Signup() {
             // Sign up user
             const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                 email,
-                password,
+                password
             });
 
             if (signUpError) {
@@ -48,71 +48,80 @@ export default function Signup() {
             console.log(user)
 
             if (!user) {
+                setLoading(false);
                 throw new Error('User data is missing.');
             }
 
-            // Update user metadata
-            const { data: updateData, error: updateError } = await supabase.auth.updateUser({
-                data: {
-                    full_name,
-                    phone,
-                },
-            });
+            // Create user profile
+            const { userProfile, userProfileError } = await supabase
+                .from('user_profile')
+                .insert([{ user_id: user.id, full_name, phone }]);
 
-            if (updateError) {
-                throw updateError;
+
+
+            if (userProfileError) {
+                setLoading(false);
+                throw userProfileError;
             }
 
-            console.log('User updated successfully:', updateData);
-            // Redirect or perform other actions after successful signup and update
+            console.log('User updated successfully:', userProfile);
 
+            // Redirect or perform other actions after successful signup
+            setTimeout(() => {
+                handlePopupClose();
+                navigate("/");
+            }, 2000);
         } catch (err) {
+            setLoading(false);
             console.error(err.message || err.error_description);
             alert('Registration failed. Please try again later.');
+        } finally {
+            setLoading(false);
         }
+    }
 
-        // try {
-        //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        //         email,
-        //         password,
-        //     });
+    // try {
+    //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    //         email,
+    //         password,
+    //     });
 
-        //     if (signUpError) {
-        //         throw signUpError;
-        //     }
+    //     if (signUpError) {
+    //         throw signUpError;
+    //     }
 
-        //     const user = signUpData.user;
+    //     const user = signUpData.user;
 
-        //     console.log({ user })
-        //     console.log({ user: user.id })
-        //     if (!user) {
-        //         throw new Error('User data is missing.');
-        //     }
+    //     console.log({ user })
+    //     console.log({ user: user.id })
+    //     if (!user) {
+    //         throw new Error('User data is missing.');
+    //     }
 
-        //     const { data: updateData, error: updateError } = await supabase
-        //         .from('aut.users')
-        //         .update({ full_name, phone })
-        //         .eq('id', user.id);
+    //     const { data: updateData, error: updateError } = await supabase
+    //         .from('aut.users')
+    //         .update({ full_name, phone })
+    //         .eq('id', user.id);
 
-        //     if (updateError) {
-        //         console.log("error: ", updateError);
-        //         throw updateError;
-        //     }
-        //     console.log({ data: updateData })
+    //     if (updateError) {
+    //         console.log("error: ", updateError);
+    //         throw updateError;
+    //     }
+    //     console.log({ data: updateData })
 
-        //     triggerPopup();
-        //     setTimeout(() => {
-        //         handlePopupClose();
-        //         navigate("/login");
-        //     }, 2000);
+    //     triggerPopup();
+    //     setTimeout(() => {
+    //         handlePopupClose();
+    //         navigate("/login");
+    //     }, 2000);
 
-        // } catch (err) {
-        //     console.error(err.message || err.error_description);
-        //     alert('Registration failed. Please try again later.');
-        // } finally {
-        //     setLoading(false);
-        // }
-    };
+    // } catch (err) {
+    //     console.error(err.message || err.error_description);
+    //     alert('Registration failed. Please try again later.');
+    // } finally {
+    //     setLoading(false);
+    // }
+    // };
     return (
         <section className="bg-blue-500 lg:h-[40vh] h-[12rem]">
             {success && (
