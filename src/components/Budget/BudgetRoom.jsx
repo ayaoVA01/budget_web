@@ -2,7 +2,7 @@ import Headers from '../Layout/Header';
 import React, { useState, useEffect } from 'react';
 import avatar from '../../assets/images/stickman.webp';
 import { Button, Form, Input, InputNumber, Select, Modal, notification } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   PlusCircleFilled,
   LeftCircleTwoTone
@@ -12,6 +12,7 @@ import Loading from '../loading/Loading'
 import { data } from 'autoprefixer';
 const { Option } = Select;
 
+
 const BudgetRoom = () => {
   const [role, setRole] = useState('admin');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -19,22 +20,28 @@ const BudgetRoom = () => {
   const [isUserRole, setUserRole] = useState(false);
   const [roomData, setRoomData] = useState('')
   const [noteData, setNoteData] = useState([])
+  const [memberData, setMemberData] = useState([])
+  const [userData, setUserData] = useState([])
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const { roomId } = useParams();
+  const [sessionId, setSessionId] = useState(null);
+  // console.log(roomId)
+  //  fetch session id
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error fetching session:', error);
+      } else {
+        setSessionId(data.session.user.id);
 
-//  fetch session id
-useEffect(() => {
-  console.log('step 11')
-const fetchUserData = async () => {
-  console.log('step 12')
+      }
+    };
 
-  const { data: { session } } = await supabase.auth.getSession();
+    fetchSession();
+  }, []);
 
-      const userId = session.user.id;
-      console.log('sesion', userId)
-  
-  fetchUserData();
-}});
 
   const handleReset = () => {
     form.resetFields();
@@ -61,6 +68,19 @@ const fetchUserData = async () => {
         .from('note')
         .insert([{ status, amount: budget, description, budget_id: roomId }])
         .select();
+
+      const amount = roomData.budget_amount;
+      const updateamount = 0;
+      noteData.map((items, index) => {
+        if (items.status === 'pay') {
+          updateamount = amount - budget
+        } else {
+          updateamount = amount + budget
+        }
+      })
+
+
+
       if (error) {
         throw error;
       }
@@ -71,10 +91,7 @@ const fetchUserData = async () => {
 
       // console.log('Inserted data:', data);
     } catch (error) {
-      notification.error({
-        message: 'Send Failed Please try again later!',
 
-      });
       console.error('Error inserting data:', error);
     }
   };
@@ -88,7 +105,7 @@ const fetchUserData = async () => {
     setIsVisible(!isVisible);
   };
 
-  const fetchBudgetData = async (id) => {
+  const fetchBudgetData = async () => {
     try {
       setLoading(true);
 
@@ -96,7 +113,7 @@ const fetchUserData = async () => {
       const { data: budgetData, error: budgetError } = await supabase
         .from('budget')
         .select()
-        .eq('id', id)
+        .eq('id', roomId)
         .single();
 
       if (budgetError) {
@@ -118,6 +135,26 @@ const fetchUserData = async () => {
       // console.log({ noteData })
       setNoteData(noteData);
 
+      const { data: memberdata, error: memberError } = await supabase
+        .from('joining_budget')
+        .select()
+        .eq('budget_id', budgetData.id)
+      if (memberError) {
+        throw memberError;
+      }
+      setMemberData(memberdata)
+
+      console.log(memberData.member)
+      // fetch user profile 
+
+      const { data: userData, error: userError } = await supabase
+        .from('user_profile')
+        .select()
+      // .eq('id', memberdata.member)
+      if (userError) {
+        throw userError;
+      }
+      setUserData(userData);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -125,32 +162,17 @@ const fetchUserData = async () => {
     }
   };
 
-
-  const roomId = roomData.id
-  // console.log(roomId,'hello id')
-
-
-  const budgetId = '1a4042d9-b7c8-41d0-b261-84224280c253';
-
+  console.log({ memberData })
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchBudgetData(budgetId);
-
-
-
-      // console.log('hello', data.id)
-      // if (data) {
-      //   form.setFieldsValue({
-      //     Status: data.status,
-      //     budget: data.budget,
-      //     description: data.description,
-      //   });
-
-      // }
+      const data = await fetchBudgetData(roomId);
     };
     fetchData();
-  }, [budgetId]);
+  }, [roomId]);
 
+
+
+  console.log('jahushds', userData)
 
 
   if (loading) return <div> <Loading /></div>
@@ -169,7 +191,7 @@ const fetchUserData = async () => {
         <div className='flex pt-4 justify-between bg-white'>
           <div className='px-4 border-b'>
             <p className='text-sm text-gray-500'>
-              Amount: ₩ <span className='text-blue-500 font-bold text-[20px]'>{roomData.budget_amount}</span>
+              Amount: ₩ <span className='text-blue-500 font-bold text-[20px]'>{allgudget}</span>
             </p>
           </div>
           <div className='border-b hover:border-blue-500 hover:text-blue-500'>
@@ -190,31 +212,49 @@ const fetchUserData = async () => {
         </div>
 
 
-        {noteData.map((items, index) => (
+        {noteData.map((items, index) => {
+          if (items.create_by === sessionId) {
+            return (
+              <div key={index}>
+                <div className='text-gray-500 text-sm mt-5 gap-2 flex justify-end'>
+                  <div className='border-b text-end'>
+                    {items.status === 'pay' ? (
+                      <p className='text-orange-500'>{items.status}</p>
+                    ) : (
+                      <p className='text-green-500'>{items.status}</p>
+                    )}
+                    <p className='text-blue-500 font-bold'>₩  {items.amount}</p>
+                    <p className='p-3'>{items.description}</p>
+                  </div>
+                  <div>
+                    <img className='w-[30px] h-[30px] object-contain rounded-[100%] border' src={avatar} alt="" />
+                  </div>
+                </div>
+              </div>
+            )
+          } else {
+            return (
+              <div key={index} className='text-gray-500 text-sm mt-5 flex gap-2'>
+                <div>
+                  <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={avatar} alt="" />
+                </div>
+                <div className='border-b'>
+                  <p className='text-gray-700 font-medium'>Name of member</p>
 
-          <div key={index} className='text-gray-500 text-sm mt-5 flex gap-2'>
-            <div>
-              <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={avatar} alt="" />
-            </div>
-            <div className='border-b'>
-              <p className='text-orange-500'>{items.status}</p>
-              <p className='text-blue-500 font-bold'>₩ {items.amount}</p>
-              <p className='p-3'>{items.description}</p>
-            </div>
-          </div>
-
-        ))}
-
-        <div className='text-gray-500 text-sm mt-5 gap-2 flex justify-end'>
-          <div className='border-b text-end'>
-            <p className='text-green-500'>pay</p>
-            <p className='text-blue-500 font-bold'>₩ 300.00</p>
-            <p className='p-3'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Iste, quasi.</p>
-          </div>
-          <div>
-            <img className='w-[30px] h-[30px] object-contain rounded-[100%] border' src={avatar} alt="" />
-          </div>
-        </div>
+                  <p className='text-blue-500 font-bold'>
+                    {items.status === 'pay' ? (
+                      <span className=' text-orange-500'> {items.status} :</span>
+                    ) : (
+                      <span className='text-green-500'> {items.status} :</span>
+                    )}
+                    ₩ {items.amount}</p>
+                  <p className='p-3'>{items.description}</p>
+                </div>
+              </div>
+            )
+          }
+        }
+        )}
       </div>
 
       {isVisible && (
@@ -236,35 +276,44 @@ const fetchUserData = async () => {
                 <p className='text-sm text-gray-400 mt-2 mb-5'>It's will be push to everyone and you can't edit later.</p>
               </div>
               <div>
-                <div className='w-full px-4'>
-                  <div className='flex w-full justify-between items-center my-2'>
-                    <div className='flex gap-2 items-center'>
-                      <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
-                      <div>
-                        <p className='text-sm'>Yao</p>
-                        <p className='text-sm text-blue-500'>284249203</p>
+
+                {memberData.map((items, index) => {
+
+                  if (items.member === userData.id) {
+                    return (
+                      <div key={index} className='w-full px-4'>
+                        <div className='flex w-full justify-between items-center my-2'>
+                          <div className='flex gap-2 items-center'>
+                            <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
+                            <div>
+                              <p className='text-sm'>{userData.full_name}</p>
+                              <p className='text-sm text-blue-500'>284249203</p>
+                            </div>
+                          </div>
+                          <div>
+                            {role === 'Menber' ? (
+                              <Form initialValues={{ role: 'admin' }}>
+                                <Form.Item
+                                  className="text-gray-400 w-[100px]"
+                                  name="role"
+                                  rules={[{ required: true, message: "" }]}
+                                >
+                                  <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
+                                    <Option value="admin">Admin</Option>
+                                    <Option value="admin">Member</Option>
+
+                                  </Select>
+                                </Form.Item>
+                              </Form>
+                            ) : (
+                              <p className='text-blue-500'>{items.role}</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      {role === 'admin' ? (
-                        <Form initialValues={{ role: 'admin' }}>
-                          <Form.Item
-                            className="text-gray-400 w-[100px]"
-                            name="role"
-                            rules={[{ required: true, message: "" }]}
-                          >
-                            <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
-                              <Option value="admin">Admin</Option>
-                              <Option value="member">Member</Option>
-                            </Select>
-                          </Form.Item>
-                        </Form>
-                      ) : (
-                        <p className='text-blue-500'>admin</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                    )
+                  }
+                })}
               </div>
             </div>
           </div>
