@@ -26,7 +26,7 @@ function App() {
           <Route path="/home" element={<PrivateRoute element={<Home />} />} />
           <Route path="/create" element={<PrivateRoute element={<CreateBudget />} />} />
           <Route path="/join" element={<PrivateRoute element={<JoinBudget />} />} />
-          <Route path="/room" element={<PrivateRoute element={<BudgetRoom />} />} />
+          <Route path="/room/:roomId" element={<PrivateRoute element={<BudgetRoom />} />} />
           {/* <Route path="/footer" element={<PrivateRoute element={<Footer />} />} /> */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -6,10 +6,13 @@ import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
 import { decodeKey } from '../../utils/BudgetRoomSecrete';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../services/supabaseClient';
 
 import Footer from '../Layout/Footer';
+import { data } from 'autoprefixer';
 const JoinBuget = () => {
-  const [success, setSucces] = useState(true);
+  const [success, setSucces] = useState(false);
+  const navigetor = useNavigate()
 
   // for reset form
   const [form] = Form.useForm();
@@ -26,18 +29,18 @@ const JoinBuget = () => {
   };
 
   const onFinish = async (values) => {
-    console.log({ values })
     const { secretkey } = values;
 
     const roomId = decodeKey(secretkey);
-    const { data, error } = await supabase
+    const { data: verrifileBudget, error } = await supabase
       .from('budget')
       .select()
       .eq('id', roomId)
+      .single();
 
-    if (data) {
-      console.log(data)
-      useNavigate('/home')
+    if (verrifileBudget) {
+      console.log("here")
+      navigetor(`/room/${verrifileBudget.id}`)
       handleReset();
     } else {
       setError(error.message);
@@ -74,11 +77,12 @@ const JoinBuget = () => {
                 form={form}
                 layout="vertical"
                 className="row-col w-full"
+                onFinish={onFinish}
               >
                 <Form.Item
                   className="text-gray-400"
                   label={<span className="text-gray-400">SCRETKEY</span>}
-                  name="budgetname"
+                  name="secretkey"
                   rules={[
                     {
                       required: true,
@@ -87,10 +91,9 @@ const JoinBuget = () => {
                   ]}
                 >
                   <Input
-                    id="budgetname"
+                    id="secretkey"
                     placeholder="ND56FNJFNJ . FDSJFJDF"
                     className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none"
-                    onFinish={onFinish}
                   />
                 </Form.Item>
 
