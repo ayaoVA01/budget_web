@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
@@ -12,7 +12,24 @@ const CreateBudget = () => {
   const [form] = Form.useForm();
   const [success, setSuccess] = useState({ success: false, id: null });
   const [error, setError] = useState(null);
+  const [userData, setUserData] = useState(null);
 
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data: sessionData, error: userError } = await supabase.auth.getSession();
+      if (userError) {
+        console.error('Error fetching session:', userError);
+      } else {
+        setUserData(sessionData.session.user);
+      }
+    };
+
+    fetchSession();
+  }, []);
+
+
+
+  // console.log({ userData })
   const handleReset = () => {
     form.resetFields();
   };
@@ -28,8 +45,18 @@ const CreateBudget = () => {
 
     const { data, error } = await supabase
       .from('budget')
-      .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description }])
+      .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description, owner: userData.id }])
       .select();
+
+    const { addJooiningRoomData: addJoiningRoom, error: addJoiningError } = await supabase
+      .from('joining_budget')
+      .insert([{ member: userData.id, budget_id: data[0].id, allow: true, role: 'ADMIN' }])
+      .select();
+
+    if (addJoiningError) {
+      console.log("error: ", addJoiningError);
+      setError(error.message);
+    }
 
     // console.log({ data })
     if (error) {
@@ -140,7 +167,7 @@ const CreateBudget = () => {
           </div>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   )
 }

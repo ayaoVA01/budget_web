@@ -3,6 +3,7 @@ import { Button, message } from 'antd';
 import { CheckCircleTwoTone, RightCircleOutlined, LeftCircleOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { decodeKey } from '../../utils/BudgetRoomSecrete';
 
 const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
     const [textToManage, setTextToManage] = useState(Scretkey);
@@ -15,6 +16,8 @@ const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
         });
     };
 
+    const roomId = decodeKey(Scretkey);
+
     const handleExport = () => {
         const blob = new Blob([textToManage], { type: 'text/plain;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
@@ -24,7 +27,7 @@ const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
         a.click();
         window.URL.revokeObjectURL(url);
         message.success('Text exported to file!');
-        navigate('/room')
+        navigate(`/room/${roomId}`)
     };
 
     // useEffect(() => {
