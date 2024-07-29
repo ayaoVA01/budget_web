@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
-=======
-import React, { useState,useEffect } from 'react';
->>>>>>> c98f638ff2831a9206d10548d652117d79a458be
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
@@ -16,9 +12,6 @@ const CreateBudget = () => {
   const [form] = Form.useForm();
   const [success, setSuccess] = useState({ success: false, id: null });
   const [error, setError] = useState(null);
-<<<<<<< HEAD
-  const [userData, setUserData] = useState(null);
-=======
   const [sessionId, setSessionId] = useState(null);
   useEffect(() => {
     const fetchSession = async () => {
@@ -33,8 +26,7 @@ const CreateBudget = () => {
 
     fetchSession();
   }, []);
-console.log('seasion',sessionId)
->>>>>>> c98f638ff2831a9206d10548d652117d79a458be
+  console.log('seasion', sessionId)
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -67,11 +59,7 @@ console.log('seasion',sessionId)
 
     const { data, error } = await supabase
       .from('budget')
-<<<<<<< HEAD
-      .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description, owner: userData.id }])
-=======
-      .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description , owner:sessionId  }])
->>>>>>> c98f638ff2831a9206d10548d652117d79a458be
+      .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description, owner: sessionId }])
       .select();
 
     const { addJooiningRoomData: addJoiningRoom, error: addJoiningError } = await supabase

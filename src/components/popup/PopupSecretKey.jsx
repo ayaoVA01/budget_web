@@ -27,12 +27,8 @@ const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
         a.click();
         window.URL.revokeObjectURL(url);
         message.success('Text exported to file!');
-<<<<<<< HEAD
-        navigate(`/room/${roomId}`)
-=======
         navigate('/join')
-    
->>>>>>> c98f638ff2831a9206d10548d652117d79a458be
+
     };
 
     // useEffect(() => {
