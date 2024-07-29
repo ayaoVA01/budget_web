@@ -1,7 +1,7 @@
 import Headers from '../Layout/Header';
 import React, { useState, useEffect } from 'react';
 import avatar from '../../assets/images/stickman.webp';
-import { Button, Form, Input, InputNumber, Select, Modal,notification } from 'antd';
+import { Button, Form, Input, InputNumber, Select, Modal, notification } from 'antd';
 import { Link } from 'react-router-dom';
 import {
   PlusCircleFilled,
@@ -18,9 +18,23 @@ const BudgetRoom = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isUserRole, setUserRole] = useState(false);
   const [roomData, setRoomData] = useState('')
-  const [noteData,setNoteData] = useState('')
+  const [noteData, setNoteData] = useState([])
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+
+//  fetch session id
+useEffect(() => {
+  console.log('step 11')
+const fetchUserData = async () => {
+  console.log('step 12')
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+      const userId = session.user.id;
+      console.log('sesion', userId)
+  
+  fetchUserData();
+}});
 
   const handleReset = () => {
     form.resetFields();
@@ -45,7 +59,7 @@ const BudgetRoom = () => {
       const { status, budget, description } = values;
       const { data, error } = await supabase
         .from('note')
-        .insert([{ status, amount: budget, description, budget_id:roomId}])
+        .insert([{ status, amount: budget, description, budget_id: roomId }])
         .select();
       if (error) {
         throw error;
@@ -59,8 +73,8 @@ const BudgetRoom = () => {
     } catch (error) {
       notification.error({
         message: 'Send Failed Please try again later!',
-        
-    });
+
+      });
       console.error('Error inserting data:', error);
     }
   };
@@ -77,40 +91,40 @@ const BudgetRoom = () => {
   const fetchBudgetData = async (id) => {
     try {
       setLoading(true);
-  
+
       // Fetch budget data
       const { data: budgetData, error: budgetError } = await supabase
         .from('budget')
         .select()
         .eq('id', id)
         .single();
-      
+
       if (budgetError) {
         throw budgetError;
       }
       setRoomData(budgetData);
-      console.log('Room ID:', budgetData.id);
-  
+      // console.log('Room ID:', budgetData.id);
+
       // Fetch note data
       const { data: noteData, error: noteError } = await supabase
         .from('note')
         .select()
         .eq('budget_id', budgetData.id);
-  
+
       if (noteError) {
         throw noteError;
       }
-  
-      console.log({noteData})
+
+      // console.log({ noteData })
       setNoteData(noteData);
-  
+
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
-  
+
 
   const roomId = roomData.id
   // console.log(roomId,'hello id')
@@ -123,9 +137,8 @@ const BudgetRoom = () => {
       const data = await fetchBudgetData(budgetId);
 
 
-  
-      // console.log('hello', data.id)
 
+      // console.log('hello', data.id)
       // if (data) {
       //   form.setFieldsValue({
       //     Status: data.status,
@@ -138,10 +151,7 @@ const BudgetRoom = () => {
     fetchData();
   }, [budgetId]);
 
-  noteData.map((items,index)=>{
-    console.log(items.id)
-  })
-  // console.log(roomData.budget_name)
+
 
   if (loading) return <div> <Loading /></div>
   return (
@@ -179,16 +189,21 @@ const BudgetRoom = () => {
           </Button>
         </div>
 
-        <div className='text-gray-500 text-sm mt-5 flex gap-2'>
-          <div>
-            <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={avatar} alt="" />
+
+        {noteData.map((items, index) => (
+
+          <div key={index} className='text-gray-500 text-sm mt-5 flex gap-2'>
+            <div>
+              <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={avatar} alt="" />
+            </div>
+            <div className='border-b'>
+              <p className='text-orange-500'>{items.status}</p>
+              <p className='text-blue-500 font-bold'>₩ {items.amount}</p>
+              <p className='p-3'>{items.description}</p>
+            </div>
           </div>
-          <div className='border-b'>
-            <p className='text-orange-500'>{noteData.status}</p>
-            <p className='text-blue-500 font-bold'>₩ 300.00</p>
-            <p className='p-3'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Iste, quasi.</p>
-          </div>
-        </div>
+
+        ))}
 
         <div className='text-gray-500 text-sm mt-5 gap-2 flex justify-end'>
           <div className='border-b text-end'>
