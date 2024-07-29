@@ -35,10 +35,8 @@ const BudgetRoom = () => {
         console.error('Error fetching session:', error);
       } else {
         setSessionId(data.session.user.id);
-
       }
     };
-
     fetchSession();
   }, []);
 
@@ -58,36 +56,43 @@ const BudgetRoom = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      // console.log('Checkout values:', values);
-      const roomId = roomData.id
-      // console.log('room IDD',roomId)
+      const roomId = roomData.id;
+
       setIsModalVisible(false);
       form.resetFields();
+
       const { status, budget, description } = values;
-      const { data, error } = await supabase
+
+      // Insert note
+      const { data: notesData, error: notesError } = await supabase
         .from('note')
         .insert([{ status, amount: budget, description, budget_id: roomId }])
         .select();
 
-      const amount = roomData.budget_amount;
-      const updateamount = 0;
-      noteData.map((items, index) => {
-        if (items.status === 'pay') {
-          updateamount = amount - budget
-        } else {
-          updateamount = amount + budget
-        }
-      })
-
-
-
-      if (error) {
-        throw error;
+      if (notesError) {
+        throw notesError;
       }
-      notification.success({
-        message: 'Send message Successful'
 
-      });
+      // Calculate updated budget amount
+      let amount = roomData.budget_amount;
+
+      if (status === 'PAY') {
+        amount -= budget;
+      } else {
+        amount += budget;
+      }
+
+      // Update budget
+      const { data: intoBudget, error: intoBudgetError } = await supabase
+        .from('budget')
+        .update({ budget_amount: amount })
+        .eq('id', roomId)
+        .select();
+
+      if (intoBudgetError) {
+        throw intoBudgetError;
+      }
+      
 
       // console.log('Inserted data:', data);
     } catch (error) {
@@ -144,7 +149,7 @@ const BudgetRoom = () => {
       }
       setMemberData(memberdata)
 
-      console.log(memberData.member)
+      
       // fetch user profile 
 
       const { data: userData, error: userError } = await supabase
@@ -162,7 +167,7 @@ const BudgetRoom = () => {
     }
   };
 
-  console.log({ memberData })
+  
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchBudgetData(roomId);
@@ -170,9 +175,7 @@ const BudgetRoom = () => {
     fetchData();
   }, [roomId]);
 
-
-
-  console.log('jahushds', userData)
+  // console.log('jahushds', userData)
 
 
   if (loading) return <div> <Loading /></div>
@@ -191,7 +194,7 @@ const BudgetRoom = () => {
         <div className='flex pt-4 justify-between bg-white'>
           <div className='px-4 border-b'>
             <p className='text-sm text-gray-500'>
-              Amount: ₩ <span className='text-blue-500 font-bold text-[20px]'>{allgudget}</span>
+              Amount: ₩ <span className='text-blue-500 font-bold text-[20px]'>{roomData.budget_amount}</span>
             </p>
           </div>
           <div className='border-b hover:border-blue-500 hover:text-blue-500'>
@@ -218,7 +221,7 @@ const BudgetRoom = () => {
               <div key={index}>
                 <div className='text-gray-500 text-sm mt-5 gap-2 flex justify-end'>
                   <div className='border-b text-end'>
-                    {items.status === 'pay' ? (
+                    {items.status === 'PAY' ? (
                       <p className='text-orange-500'>{items.status}</p>
                     ) : (
                       <p className='text-green-500'>{items.status}</p>
@@ -242,7 +245,7 @@ const BudgetRoom = () => {
                   <p className='text-gray-700 font-medium'>Name of member</p>
 
                   <p className='text-blue-500 font-bold'>
-                    {items.status === 'pay' ? (
+                    {items.status === 'PAY' ? (
                       <span className=' text-orange-500'> {items.status} :</span>
                     ) : (
                       <span className='text-green-500'> {items.status} :</span>
@@ -298,6 +301,7 @@ const BudgetRoom = () => {
                                   name="role"
                                   rules={[{ required: true, message: "" }]}
                                 >
+                                  
                                   <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
                                     <Option value="admin">Admin</Option>
                                     <Option value="admin">Member</Option>
@@ -333,17 +337,21 @@ const BudgetRoom = () => {
             className="row-col w-full"
           >
             <Form.Item
-              className=" text-gray-400"
-              label={<span className=" text-gray-400">Status</span>}
+              className="text-gray-400"
+              label={<span className="text-gray-400">Status</span>}
               name="status"
               rules={[{ required: true, message: " " }]}
             >
-              <Input
-                id="budgetname"
-                placeholder="status"
-                className="w-full p-2.5 border-t-0 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none"
-              />
+              <Select
+                id="status"
+                placeholder="Select status"
+                className="w-full h-10  border-t-0 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none"
+              >
+                <Option value="PAY">PAY</Option>
+                <Option value="DEPOSIT">DEPOSIT</Option>
+              </Select>
             </Form.Item>
+
             <Form.Item
               className=" text-white"
               label={<span className=" text-gray-400">Budget</span>}
