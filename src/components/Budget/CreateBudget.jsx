@@ -7,7 +7,7 @@ import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
 import { supabase } from "../../services/supabaseClient";
 import { encodeKey } from "../../utils/BudgetRoomSecrete";
-
+import { Footer } from 'antd/es/layout/layout';
 const CreateBudget = () => {
   const [form] = Form.useForm();
   const [success, setSuccess] = useState({ success: false, id: null });
@@ -23,7 +23,7 @@ const CreateBudget = () => {
   };
 
   const onFinish = async (values) => {
-    console.log({ values })
+    // console.log({ values })
     const { budgetname, budget, description } = values;
 
     const { data, error } = await supabase
@@ -31,7 +31,7 @@ const CreateBudget = () => {
       .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description }])
       .select();
 
-    console.log({ data })
+    // console.log({ data })
     if (error) {
       setError(error.message);
     } else {
@@ -140,6 +140,7 @@ const CreateBudget = () => {
           </div>
         </div>
       </div>
+      <Footer/>
     </div>
   )
 }
