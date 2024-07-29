@@ -12,7 +12,6 @@ import {
 } from "@ant-design/icons";
 
 import Footer from "../components/Layout/Footer";
-
 const Home = () => {
   return (
     <div>
