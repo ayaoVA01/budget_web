@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
+=======
+import React, { useState,useEffect } from 'react';
+>>>>>>> c98f638ff2831a9206d10548d652117d79a458be
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
@@ -12,7 +16,25 @@ const CreateBudget = () => {
   const [form] = Form.useForm();
   const [success, setSuccess] = useState({ success: false, id: null });
   const [error, setError] = useState(null);
+<<<<<<< HEAD
   const [userData, setUserData] = useState(null);
+=======
+  const [sessionId, setSessionId] = useState(null);
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error fetching session:', error);
+      } else {
+        setSessionId(data.session.user.id);
+        console.log('Session ID:', data.session.user.id);
+      }
+    };
+
+    fetchSession();
+  }, []);
+console.log('seasion',sessionId)
+>>>>>>> c98f638ff2831a9206d10548d652117d79a458be
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -45,7 +67,11 @@ const CreateBudget = () => {
 
     const { data, error } = await supabase
       .from('budget')
+<<<<<<< HEAD
       .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description, owner: userData.id }])
+=======
+      .insert([{ budget_name: budgetname, budget_amount: parseFloat(budget), description , owner:sessionId  }])
+>>>>>>> c98f638ff2831a9206d10548d652117d79a458be
       .select();
 
     const { addJooiningRoomData: addJoiningRoom, error: addJoiningError } = await supabase
@@ -109,7 +135,7 @@ const CreateBudget = () => {
                 className="text-gray-400"
                 label={<span className="text-gray-400">Budget name</span>}
                 name="budgetname"
-                rules={[{ required: true, message: "Please enter a budget name" }]}
+                rules={[{ required: true, message: "" }]}
               >
                 <Input
                   id="budgetname"
@@ -121,7 +147,7 @@ const CreateBudget = () => {
                 className="text-white"
                 label={<span className="text-gray-400">Budget</span>}
                 name="budget"
-                rules={[{ required: true, message: "Please enter a budget amount" }]}
+                rules={[{ required: true, message: "" }]}
               >
                 <Input
                   id="budget"

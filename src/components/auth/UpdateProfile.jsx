@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Popup from '../popup/Popup';
 import { Button, Form, Input, Upload, notification } from 'antd';
 import { LeftCircleTwoTone, UploadOutlined } from '@ant-design/icons';
-import avatar from '../../assets/images/stickman.webp';
+
 import logo from '../../assets/images/logo.png';
 import { supabase } from '../../services/supabaseClient'; // Ensure you have the correct path
 const UpdateProfile = () => {
@@ -14,12 +14,6 @@ const UpdateProfile = () => {
     const [imageName, setImageName] = useState('');
     const [users, setUsers] = useState([]);
 
-    // Handle form reset
-    // const handleReset = () => {
-    //     form.resetFields();
-    //     setImageUrl(avatar); // Reset to initial image URL
-    //     setImageName(''); // Reset image name
-    // };
 
     // Handle popup close
     const handlePopupClose = () => {
@@ -82,16 +76,19 @@ const UpdateProfile = () => {
 
     // Handle form submission
     const handleSubmit = async (values) => {
-        const { full_name, phone } = values;
+        const { image, full_name, phone } = values;
         console.log('valua', values)
         const { data: { user } } = await supabase.auth.getUser();
+
         if (user) {
             console.log('step1')
             try {
                 const { data, error } = await supabase
-                    .from('users')
-                    .upsert({ id: user.id, full_name, phone }, { onConflict: ['id'] });
-                console.log(data)
+                    .from('user_profile')
+                    .update({ full_name, phone, image })
+                    .eq('user_id', user.id)
+                    .select();
+                console.log(data, 'daata is')
                 if (error) {
                     throw error;
                 }
@@ -142,15 +139,16 @@ const UpdateProfile = () => {
                                     className="text-gray-400"
                                     label={<span className="text-gray-400">Profile Image</span>}
                                     name="image"
-                                    valuePropName="fileList"
-                                    getValueFromEvent={e => e.fileList}
+                                    valuePropName="filelist"
+                                    getValueFromEvent={e => e.file}
                                 >
                                     <Upload
                                         name="profileImage"
                                         listType="picture"
                                         showUploadList={true}
-                                        beforeUpload={() => true}
+                                        beforeUpload={() => false}
                                         onChange={handleImageChange}
+                                        maxCount={1}
                                     >
                                         <Button icon={<UploadOutlined />}>Upload</Button>
                                     </Upload>

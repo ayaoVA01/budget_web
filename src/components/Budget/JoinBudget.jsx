@@ -13,7 +13,7 @@ import { data } from 'autoprefixer';
 const JoinBuget = () => {
   const [success, setSucces] = useState(false);
   const navigetor = useNavigate()
-
+ const [error,setError] = useState(false)
   // for reset form
   const [form] = Form.useForm();
   const handleReset = () => {
