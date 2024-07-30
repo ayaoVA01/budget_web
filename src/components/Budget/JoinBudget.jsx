@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
@@ -13,9 +13,22 @@ import { data } from 'autoprefixer';
 const JoinBuget = () => {
   const [success, setSucces] = useState(false);
   const navigetor = useNavigate()
- const [error,setError] = useState(false)
+  const [error, setError] = useState(false)
   // for reset form
   const [form] = Form.useForm();
+  // const [sessionId, setSessionId] = useState(null);
+  // useEffect(() => {
+  //   const fetchSession = async () => {
+  //     const { data, error } = await supabase.auth.getSession();
+  //     if (error) {
+  //       console.error('Error fetching session:', error);
+  //     } else {
+  //       setSessionId(data.session.user.id);
+  //     }
+  //   };
+
+  //   fetchSession();
+  // }, []);
   const handleReset = () => {
     form.resetFields();
   };
@@ -29,6 +42,8 @@ const JoinBuget = () => {
   };
 
   const onFinish = async (values) => {
+    const { data: sessionData, error: userError } = await supabase.auth.getSession();
+    console.log("on finish")
     const { secretkey } = values;
 
     const roomId = decodeKey(secretkey);
@@ -39,9 +54,55 @@ const JoinBuget = () => {
       .single();
 
     if (verrifileBudget) {
-      console.log("here")
-      navigetor(`/room/${verrifileBudget.id}`)
-      handleReset();
+      const roomId = decodeKey(secretkey);
+      /// check user is joined room or still not
+
+      const { data: userJoined, error: userNotJoined } = await supabase
+        .from('joining_budget')
+        .select()
+        .eq('budget_id', roomId)
+        .eq('member', sessionData.session.user.id)
+        .single();
+
+
+      console.log({ userJoined })
+      if (userJoined) {
+        console.log("alreaedy joined")
+        navigetor(`/room/${verrifileBudget.id}`)
+        handleReset();
+      } else {
+        console.log("still not joined")
+        console.log({ roomId })
+        console.log({ sessionid: sessionData.session.user.id })
+
+        const { data: joinRoom, error: joinRoomfail } = await supabase
+          .from('joining_budget')
+          .insert({ budget_id: roomId, member: sessionData.session.user.id, allow: false, role: 'MEMBER' })
+          .select();
+
+        console.log("createJoiningRoom", { joinRoom })
+
+        if (joinRoomfail) {
+          console.log({ joinRoomfail })
+          setError(true)
+        }
+
+
+        if (joinRoom) {
+          console.log("join room")
+          const { data: noti, error: notiFail } = await supabase
+            .from('notification')
+            .insert({ budget_room: roomId, sender: sessionData.session.user.id, description: `User ${sessionData.session.user.email} joined room ${verrifileBudget.budget_name}`, noti_type: "ACCEPT_JOIN_ROOM" })
+            .select();
+
+          console.log("create noti")
+          console.log({ noti })
+          navigetor(`/room/${verrifileBudget.id}`)
+          handleReset();
+        }
+
+      }
+
     } else {
       setError(error.message);
     }
