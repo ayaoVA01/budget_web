@@ -56,8 +56,6 @@ const BudgetRoom = () => {
   };
 
 
-  // function for send note or message.
-
 
   const handleOk = async () => {
     try {
@@ -141,7 +139,6 @@ const BudgetRoom = () => {
       if (noteError) {
         throw noteError;
       }
-
       // console.log({ noteData })
       setNoteData(noteData);
 
