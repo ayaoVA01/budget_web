@@ -28,6 +28,7 @@ const BudgetRoom = () => {
   const { roomId } = useParams();
   const [sessionId, setSessionId] = useState(null);
   const [checkUser, setCheckUser] = useState(null);
+  const [checkUserPermision, setCheckUserPermision] = useState(null);
   // console.log(roomId)
   //  fetch session id
   useEffect(() => {
@@ -186,21 +187,31 @@ const BudgetRoom = () => {
       }
       setRoomData(budgetData);
 
+      const checkUserPermision = await supabase
+        .from('joining_budget')
+        .select('*')
+        .eq('member', data.session.user.id)
+        .eq('budget_id', roomId)
+        .eq('allow', true)
+        .single();
+
+      if (!checkUserPermision) {
+        console.log("check user with null: ", { checkUserPermision })
+        setCheckUserPermision(null);
+      } else {
+        setCheckUserPermision(checkUserPermision.data);
+      }
 
       // for check member data
       const checkUser = await supabase
         .from('joining_budget')
         .select('*')
-        // .eq('member', data.session.user.id) /// TODO: sesionId is null when selft refresh 
         .eq('budget_id', roomId)
         .eq('allow', true);
 
-      if (!checkUser.data) {
-        console.log("check user with null: ", { checkUser })
-        setCheckUser(null);
-      } else {
-        setCheckUser(checkUser.data);
-      }
+      setCheckUser(checkUser.data);
+
+
       console.log(checkUser.data)
 
 
@@ -211,20 +222,19 @@ const BudgetRoom = () => {
         return;
       }
 
-      console.log('Member ID ',memberIds[0])
+      console.log('Member ID ', memberIds[0])
       // fetch user profile 
       const { data: profileData, error: profileError } = await supabase
         .from('user_profile')
-        .select('*')
+        .select();
       // .eq('user_id', memberIds[1])
       if (profileError) {
         throw profileError;
       }
       setProfileData(profileData);
-      // console.log('menber id: ',checkUser)
-  
+      console.log('profile DAta: ', { profileData })
 
-      console.log('dskadasdad profile is', profileData)
+      // console.log('dskadasdad profile is', profileData)
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -234,8 +244,9 @@ const BudgetRoom = () => {
   };
 
 
+  console.log({ checkUserPermision })
   /// if not check data then navigate to pending page
-  if (!checkUser) {
+  if (!checkUserPermision) {
     return <div> <Pending />  </div>
   }
 
