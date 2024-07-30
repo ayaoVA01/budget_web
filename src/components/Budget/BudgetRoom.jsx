@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { supabase } from '../../services/supabaseClient';
 import Loading from '../loading/Loading'
-import { data } from 'autoprefixer';
+// import { data } from 'autoprefixer';
 const { Option } = Select;
 
 
@@ -26,6 +26,7 @@ const BudgetRoom = () => {
   const [form] = Form.useForm();
   const { roomId } = useParams();
   const [sessionId, setSessionId] = useState(null);
+  const [checkUser, setCheckUser] = useState(null);
   // console.log(roomId)
   //  fetch session id
   useEffect(() => {
@@ -37,8 +38,13 @@ const BudgetRoom = () => {
         setSessionId(data.session.user.id);
       }
     };
+    const fetchData = async () => {
+      const data = await fetchBudgetData(roomId);
+    };
+
+    fetchData();
     fetchSession();
-  }, []);
+  }, [roomId]);
 
 
   const handleReset = () => {
@@ -92,7 +98,7 @@ const BudgetRoom = () => {
       if (intoBudgetError) {
         throw intoBudgetError;
       }
-      
+
 
       // console.log('Inserted data:', data);
     } catch (error) {
@@ -109,7 +115,6 @@ const BudgetRoom = () => {
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
-
   const fetchBudgetData = async () => {
     try {
       setLoading(true);
@@ -149,7 +154,7 @@ const BudgetRoom = () => {
       }
       setMemberData(memberdata)
 
-      
+
       // fetch user profile 
 
       const { data: userData, error: userError } = await supabase
@@ -160,6 +165,25 @@ const BudgetRoom = () => {
         throw userError;
       }
       setUserData(userData);
+
+      /// check user is in the room and allow is true or not
+      console.log({ sessionId })
+      console.log({ roomId })
+      const checkUser = await supabase
+        .from('joining_budget')
+        .select()
+        .eq('member', sessionId) /// TODO: sesionId is null when selft refresh 
+        .eq('budget_id', roomId)
+        .eq('allow', true);
+
+      console.log({ checkUser })
+      if (checkUser.data.length <= 0 || !checkUser.data) {
+        console.log("check user with null: ", { checkUser })
+        setCheckUser(null);
+      } else {
+        setCheckUser(checkUser);
+      }
+
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -167,18 +191,14 @@ const BudgetRoom = () => {
     }
   };
 
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchBudgetData(roomId);
-    };
-    fetchData();
-  }, [roomId]);
 
-  // console.log('jahushds', userData)
-
+  /// if not check data then navigate to pending page
+  if (!checkUser) {
+    return <div> Pending user page...</div>
+  }
 
   if (loading) return <div> <Loading /></div>
+
   return (
     <div className='px-5 lg:max-w-[70rem] mx-auto'>
       <div className='sticky top-0'>
@@ -301,7 +321,7 @@ const BudgetRoom = () => {
                                   name="role"
                                   rules={[{ required: true, message: "" }]}
                                 >
-                                  
+
                                   <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
                                     <Option value="admin">Admin</Option>
                                     <Option value="admin">Member</Option>

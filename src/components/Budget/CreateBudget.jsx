@@ -20,7 +20,6 @@ const CreateBudget = () => {
         console.error('Error fetching session:', error);
       } else {
         setSessionId(data.session.user.id);
-        console.log('Session ID:', data.session.user.id);
       }
     };
 
@@ -64,7 +63,7 @@ const CreateBudget = () => {
 
     const { addJooiningRoomData: addJoiningRoom, error: addJoiningError } = await supabase
       .from('joining_budget')
-      .insert([{ member: userData.id, budget_id: data[0].id, allow: true, role: 'ADMIN' }])
+      .insert([{ member: sessionId, budget_id: data[0].id, allow: true, role: 'ADMIN' }])
       .select();
 
     if (addJoiningError) {
