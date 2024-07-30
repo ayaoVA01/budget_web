@@ -50,8 +50,6 @@ const BudgetRoom = () => {
   };
 
 
-  // function for send note or message.
-
 
   const handleOk = async () => {
     try {
@@ -92,7 +90,7 @@ const BudgetRoom = () => {
       if (intoBudgetError) {
         throw intoBudgetError;
       }
-      
+
 
       // console.log('Inserted data:', data);
     } catch (error) {
@@ -136,8 +134,7 @@ const BudgetRoom = () => {
       if (noteError) {
         throw noteError;
       }
-
-      // console.log({ noteData })
+            // console.log({ noteData })
       setNoteData(noteData);
 
       const { data: memberdata, error: memberError } = await supabase
@@ -149,7 +146,8 @@ const BudgetRoom = () => {
       }
       setMemberData(memberdata)
 
-      
+
+
       // fetch user profile 
 
       const { data: userData, error: userError } = await supabase
@@ -167,7 +165,7 @@ const BudgetRoom = () => {
     }
   };
 
-  
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchBudgetData(roomId);
@@ -301,7 +299,7 @@ const BudgetRoom = () => {
                                   name="role"
                                   rules={[{ required: true, message: "" }]}
                                 >
-                                  
+
                                   <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
                                     <Option value="admin">Admin</Option>
                                     <Option value="admin">Member</Option>
