@@ -1,5 +1,5 @@
-import React from "react";
-import { Layout, Menu, notification, Button, Popover, List } from "antd";
+import React, { useState } from "react";
+import { Layout, notification, Button, Popover, List, Badge } from "antd";
 import { BellOutlined, UserOutlined } from "@ant-design/icons";
 import logo from "../../assets/images/logo.png";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ const { Header } = Layout;
 
 const Headers = () => {
   const navigate = useNavigate(); // Hook for navigation
+  const [hasNotification, setHasNotification] = useState(true); // State to handle notification status
 
   const openNotification = () => {
     notification.open({
@@ -16,6 +17,7 @@ const Headers = () => {
       description: 'This is the content of the notification. This notification will close automatically after 4.5 seconds.',
       icon: <BellOutlined style={{ color: '#108ee9' }} />,
     });
+    setHasNotification(false); // Reset notification status after opening
   };
 
   const handleLogout = async () => {
@@ -59,38 +61,26 @@ const Headers = () => {
     />
   );
 
-  const menuItems = [
-    {
-      label: (
-        <div className="flex items-center gap-2">
-          <img className="w-[50px] h-[50px] object-cover" src={logo} alt="Logo" />
-          <h1 className="font-bold text-lg">BUDGET</h1>
-        </div>
-      ),
-      key: 'logo',
-    },
-    {
-      label: (
-        <>
-          <Button type="text" onClick={openNotification} className="mx-3" >
-            <BellOutlined style={{ fontSize: '20px' }} />
-          </Button>
-          <Popover content={<ProfilePopover />} title="Profile" trigger="click">
-            <Button type="text">
-              <UserOutlined style={{ fontSize: '24px' }} />
-            </Button>
-          </Popover>
-        </>
-      ),
-      key: 'actions',
-    },
-  ];
-
   return (
     <div className="top-0">
       <Header className="bg-white mt-5">
-        <div className="header-col header-nav">
-          <Menu mode="horizontal" className="justify-around" items={menuItems} />
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <img className="w-[50px] h-[50px] object-cover" src={logo} alt="Logo" />
+            <h1 className="font-bold text-lg">BUDGET</h1>
+          </div>
+          <div>
+            <Badge dot={hasNotification} offset={[-10, 10]}>
+              <Button type="text" onClick={openNotification} className="mx-3">
+                <BellOutlined style={{ fontSize: '20px' }} />
+              </Button>
+            </Badge>
+            <Popover content={<ProfilePopover />} title="Profile" trigger="click">
+              <Button type="text">
+                <UserOutlined style={{ fontSize: '24px' }} />
+              </Button>
+            </Popover>
+          </div>
         </div>
       </Header>
     </div>

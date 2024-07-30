@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { supabase } from '../../services/supabaseClient';
 import Loading from '../loading/Loading'
+import Pending from '../loading/Pending';
 // import { data } from 'autoprefixer';
 const { Option } = Select;
 
@@ -21,7 +22,7 @@ const BudgetRoom = () => {
   const [roomData, setRoomData] = useState('')
   const [noteData, setNoteData] = useState([])
   const [memberData, setMemberData] = useState([])
-  const [userData, setUserData] = useState([])
+  const [profileData, setProfileData] = useState([])
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const { roomId } = useParams();
@@ -30,20 +31,13 @@ const BudgetRoom = () => {
   // console.log(roomId)
   //  fetch session id
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error fetching session:', error);
-      } else {
-        setSessionId(data.session.user.id);
-      }
-    };
+
     const fetchData = async () => {
       const data = await fetchBudgetData(roomId);
     };
 
     fetchData();
-    fetchSession();
+
   }, [roomId]);
 
 
@@ -55,6 +49,50 @@ const BudgetRoom = () => {
     setIsModalVisible(true);
   };
 
+  const fetchNoteData = async () => {
+    const { data, error } = await supabase
+      .from('note')
+      .select()
+      .eq('budget_id', roomId);
+
+    if (error) {
+      console.error('Error fetching note data:', error);
+    } else {
+      setNoteData(data);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    // Fetch initial data
+
+    fetchNoteData();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('custom-all-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'note', filter: `budget_id=eq.${roomId}` },
+        (payload) => {
+          console.log('Change received!', payload);
+          fetchNoteData(); // Re-fetch data when a change is detected
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Subscribed to changes.');
+        }
+      });
+    // Cleanup subscription on component unmount
+
+    // console.log(channel)
+    return () => {
+      supabase.removeChannel(channel);
+    };
+
+
+  }, [roomId]);
 
 
   const handleOk = async () => {
@@ -77,6 +115,8 @@ const BudgetRoom = () => {
         throw notesError;
       }
 
+
+
       // Calculate updated budget amount
       let amount = roomData.budget_amount;
 
@@ -96,11 +136,17 @@ const BudgetRoom = () => {
       if (intoBudgetError) {
         throw intoBudgetError;
       }
+      notification.success({
+        message: 'Success!',
+
+      });
 
 
       // console.log('Inserted data:', data);
     } catch (error) {
-
+      notification.error({
+        message: 'Oop! try again later.',
+      });
       console.error('Error inserting data:', error);
     }
   };
@@ -117,6 +163,17 @@ const BudgetRoom = () => {
     try {
       setLoading(true);
 
+      // fetch session ID 
+
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error fetching session:', error);
+      } else {
+        setSessionId(data.session);
+      }
+
+
+
       // Fetch budget data
       const { data: budgetData, error: budgetError } = await supabase
         .from('budget')
@@ -128,70 +185,58 @@ const BudgetRoom = () => {
         throw budgetError;
       }
       setRoomData(budgetData);
-      // console.log('Room ID:', budgetData.id);
-
-      // Fetch note data
-      const { data: noteData, error: noteError } = await supabase
-        .from('note')
-        .select()
-        .eq('budget_id', budgetData.id);
-
-      if (noteError) {
-        throw noteError;
-      }
-      // console.log({ noteData })
-      setNoteData(noteData);
-
-      const { data: memberdata, error: memberError } = await supabase
-        .from('joining_budget')
-        .select()
-        .eq('budget_id', budgetData.id)
-      if (memberError) {
-        throw memberError;
-      }
-      setMemberData(memberdata)
 
 
-      // fetch user profile 
-
-      const { data: userData, error: userError } = await supabase
-        .from('user_profile')
-        .select()
-      // .eq('id', memberdata.member)
-      if (userError) {
-        throw userError;
-      }
-      setUserData(userData);
-
-      /// check user is in the room and allow is true or not
-      console.log({ sessionId })
-      console.log({ roomId })
+      // for check member data
       const checkUser = await supabase
         .from('joining_budget')
-        .select()
-        .eq('member', sessionId) /// TODO: sesionId is null when selft refresh 
+        .select('*')
+        // .eq('member', data.session.user.id) /// TODO: sesionId is null when selft refresh 
         .eq('budget_id', roomId)
         .eq('allow', true);
 
-      console.log({ checkUser })
-      if (checkUser.data.length <= 0 || !checkUser.data) {
+      if (!checkUser.data) {
         console.log("check user with null: ", { checkUser })
         setCheckUser(null);
       } else {
-        setCheckUser(checkUser);
+        setCheckUser(checkUser.data);
+      }
+      console.log(checkUser.data)
+
+
+      // fect member who joining room
+      const memberIds = checkUser.data.map(item => item.member);
+      if (memberIds.length === 0) {
+        console.log("No member IDs found.");
+        return;
       }
 
+      console.log('Member ID ',memberIds[0])
+      // fetch user profile 
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_profile')
+        .select('*')
+      // .eq('user_id', memberIds[1])
+      if (profileError) {
+        throw profileError;
+      }
+      setProfileData(profileData);
+      // console.log('menber id: ',checkUser)
+  
+
+      console.log('dskadasdad profile is', profileData)
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
+
   };
 
 
   /// if not check data then navigate to pending page
   if (!checkUser) {
-    return <div> Pending user page...</div>
+    return <div> <Pending />  </div>
   }
 
   if (loading) return <div> <Loading /></div>
@@ -233,17 +278,21 @@ const BudgetRoom = () => {
 
 
         {noteData.map((items, index) => {
-          if (items.create_by === sessionId) {
+          if (items.create_by === sessionId.user.id) {
             return (
               <div key={index}>
                 <div className='text-gray-500 text-sm mt-5 gap-2 flex justify-end'>
                   <div className='border-b text-end'>
-                    {items.status === 'PAY' ? (
-                      <p className='text-orange-500'>{items.status}</p>
-                    ) : (
-                      <p className='text-green-500'>{items.status}</p>
-                    )}
-                    <p className='text-blue-500 font-bold'>₩  {items.amount}</p>
+                    <p className='text-blue-500 font-bold'>
+                      ₩ {items.amount} &nbsp; &nbsp;
+
+
+                      {items.status === 'PAY' ? (
+                        <span className='text-orange-500'>:{items.status}</span>
+                      ) : (
+                        <span className='text-green-500'>:{items.status}</span>
+                      )}
+                    </p>
                     <p className='p-3'>{items.description}</p>
                   </div>
                   <div>
@@ -266,7 +315,7 @@ const BudgetRoom = () => {
                       <span className=' text-orange-500'> {items.status} :</span>
                     ) : (
                       <span className='text-green-500'> {items.status} :</span>
-                    )}
+                    )} &nbsp; &nbsp;
                     ₩ {items.amount}</p>
                   <p className='p-3'>{items.description}</p>
                 </div>
@@ -297,16 +346,17 @@ const BudgetRoom = () => {
               </div>
               <div>
 
-                {memberData.map((items, index) => {
-
-                  if (items.member === userData.id) {
+                {checkUser.map((items, index) => {
+                  console.log(items.member, 'hsudhauda memver')
+                  console.log(profileData.id, 'hsudhauda ddata profile')
+                  if (items.member === profileData.id) {
                     return (
                       <div key={index} className='w-full px-4'>
                         <div className='flex w-full justify-between items-center my-2'>
                           <div className='flex gap-2 items-center'>
                             <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
                             <div>
-                              <p className='text-sm'>{userData.full_name}</p>
+                              <p className='text-sm'>{profileData.full_name}</p>
                               <p className='text-sm text-blue-500'>284249203</p>
                             </div>
                           </div>
