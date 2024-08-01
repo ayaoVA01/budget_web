@@ -8,7 +8,7 @@ import { decodeKey } from '../../utils/BudgetRoomSecrete';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabaseClient';
 
-import Footer from '../Layout/Footer';
+
 import { data } from 'autoprefixer';
 const JoinBuget = () => {
   const [success, setSucces] = useState(false);
@@ -111,7 +111,7 @@ const JoinBuget = () => {
   return (
     <div className='w-full h-full flex-col'>
       <Headers />
-      <div>
+      <div className='h-[80vh]'>
         <div className="w-full h-full mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
           <div className="p-6 w-full bg-white  space-y-4 sm:p-8 rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200">
             <Link to='/home' className='flex gap-2 text-gray-500'>
@@ -185,7 +185,7 @@ const JoinBuget = () => {
           </div>
         </div>
       </div>
-      <Footer className='' />
+
     </div>
   )
 }

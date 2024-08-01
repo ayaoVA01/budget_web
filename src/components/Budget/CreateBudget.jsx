@@ -7,7 +7,8 @@ import { Button, Form, Input } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
 import { supabase } from "../../services/supabaseClient";
 import { encodeKey } from "../../utils/BudgetRoomSecrete";
-import { Footer } from 'antd/es/layout/layout';
+
+
 const CreateBudget = () => {
   const [form] = Form.useForm();
   const [success, setSuccess] = useState({ success: false, id: null });
@@ -83,7 +84,7 @@ const CreateBudget = () => {
   return (
     <div>
       <Headers />
-      <div className="w-full mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
+      <div className="w-full mx-auto sm:max-w-[70rem] h-[85vh] md:mt-0 xl:p-0">
         <div className="p-6 w-full bg-white mb-[4rem] space-y-4 sm:p-8 rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200">
           <Link to='/home' className='flex gap-2 text-gray-500'>
             <LeftCircleTwoTone />
@@ -180,7 +181,7 @@ const CreateBudget = () => {
           </div>
         </div>
       </div>
-      <Footer />
+    
     </div>
   )
 }
