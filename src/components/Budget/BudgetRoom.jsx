@@ -15,28 +15,42 @@ const { Option } = Select;
 
 
 const BudgetRoom = () => {
-  const [role, setRole] = useState('admin');
+  const [memberRole, setRole] = useState('MEMBER');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [isUserRole, setUserRole] = useState(false);
   const [roomData, setRoomData] = useState('')
   const [noteData, setNoteData] = useState([])
-  const [memberData, setMemberData] = useState([])
-  const [profileData, setProfileData] = useState([])
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const { roomId } = useParams();
   const [sessionId, setSessionId] = useState(null);
-  const [checkUser, setCheckUser] = useState(null);
+  const [roomMember, setRoomMember] = useState(null);
   const [checkUserPermision, setCheckUserPermision] = useState(null);
   // console.log(roomId)
   //  fetch session id
   useEffect(() => {
 
+
     const fetchData = async () => {
       const data = await fetchBudgetData(roomId);
     };
+    const checkMemberRole = async () => {
+      const userData = await supabase.auth.getSession();
 
+      const { data: memberRole, error: memberRoleError } = await supabase
+        .from('joining_budget')
+        .select()
+        .eq('budget_id', roomId)
+        .eq('member', userData.data.session.user.id)
+        .single();
+
+      console.log({ memberRole }, "role 1")
+      if (memberRole) {
+        setRole(memberRole.role)
+      }
+    }
+
+    checkMemberRole();
     fetchData();
 
   }, [roomId]);
@@ -51,43 +65,113 @@ const BudgetRoom = () => {
   };
 
   const fetchNoteData = async () => {
-    const { data, error } = await supabase
+    const { data: noteData, error: noteDataError } = await supabase
       .from('note')
-      .select()
+      .select('*, create_by(*)')
       .eq('budget_id', roomId);
 
-    if (error) {
-      console.error('Error fetching note data:', error);
+    if (noteDataError) {
+      console.error('Error fetching note data:', noteDataError);
     } else {
-      setNoteData(data);
+      console.log({ "note data": noteData })
+      setNoteData(noteData);
     }
     setLoading(false);
   };
 
+  /// user to fetach data realtime
+  const fetchBudgetDataNew = async () => {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error fetching session:', error);
+      } else {
+        setSessionId(data.session);
+      }
+
+
+
+      // Fetch budget data
+      const { data: budgetData, error: budgetError } = await supabase
+        .from('budget')
+        .select()
+        .eq('id', roomId)
+        .single();
+
+      if (budgetError) {
+        throw budgetError;
+      }
+      setRoomData(budgetData);
+
+      const checkUserPermision = await supabase
+        .from('joining_budget')
+        .select('*')
+        .eq('member', data.session.user.id)
+        .eq('budget_id', roomId)
+        .eq('allow', true)
+        .single();
+
+      if (!checkUserPermision) {
+        console.log("check user with null: ", { checkUserPermision })
+        setCheckUserPermision(null);
+      } else {
+        setCheckUserPermision(checkUserPermision.data);
+      }
+
+      // for check member data
+      const roomMembers = await supabase
+        .from('joining_budget')
+        .select('*, user_profile:member(*)')
+        .eq('budget_id', roomId);
+
+      setRoomMember(roomMembers.data);
+
+
+      console.log({ roomMomber: roomMembers.data })
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
   useEffect(() => {
     // Fetch initial data
-
+    fetchBudgetDataNew(roomId);
     fetchNoteData();
+    const channel = supabase.channel('custom-all-channel');
 
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('custom-all-channel')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'note', filter: `budget_id=eq.${roomId}` },
-        (payload) => {
-          console.log('Change received!', payload);
-          fetchNoteData(); // Re-fetch data when a change is detected
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Subscribed to changes.');
-        }
-      });
+    // Subscribe to changes in the 'note' table
+    channel.on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'note', filter: `budget_id=eq.${roomId}` },
+      (payload) => {
+        console.log('Change in note table:', payload);
+        fetchNoteData(); // Re-fetch data when a change is detected in 'note' table
+      }
+    );
+
+    // Subscribe to changes in the 'budget' table
+    channel.on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'budget', filter: `id=eq.${roomId}` },
+      (payload) => {
+        console.log('Change in budget table:', payload);
+        fetchBudgetDataNew(roomId); // Re-fetch data when a change is detected in 'budget' table
+      }
+    );
+
+    // Subscribe to the channel
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Subscribed to changes.');
+      }
+    });
+
+
     // Cleanup subscription on component unmount
-
-    // console.log(channel)
     return () => {
       supabase.removeChannel(channel);
     };
@@ -98,6 +182,9 @@ const BudgetRoom = () => {
 
   const handleOk = async () => {
     try {
+      const userData = await supabase.auth.getSession();
+      console.log({ userData })
+
       const values = await form.validateFields();
       const roomId = roomData.id;
 
@@ -109,7 +196,7 @@ const BudgetRoom = () => {
       // Insert note
       const { data: notesData, error: notesError } = await supabase
         .from('note')
-        .insert([{ status, amount: budget, description, budget_id: roomId }])
+        .insert([{ status, amount: budget, description, budget_id: roomId, create_by: userData.data.session.user.id }])
         .select();
 
       if (notesError) {
@@ -203,38 +290,16 @@ const BudgetRoom = () => {
       }
 
       // for check member data
-      const checkUser = await supabase
+      const roomMembers = await supabase
         .from('joining_budget')
-        .select('*')
-        .eq('budget_id', roomId)
-        .eq('allow', true);
+        .select('*, user_profile:member(*)')
+        .eq('budget_id', roomId);
 
-      setCheckUser(checkUser.data);
-
-
-      console.log(checkUser.data)
+      setRoomMember(roomMembers.data);
 
 
-      // fect member who joining room
-      const memberIds = checkUser.data.map(item => item.member);
-      if (memberIds.length === 0) {
-        console.log("No member IDs found.");
-        return;
-      }
+      console.log({ roomMomber: roomMembers.data })
 
-      console.log('Member ID ', memberIds[0])
-      // fetch user profile 
-      const { data: profileData, error: profileError } = await supabase
-        .from('user_profile')
-        .select();
-      // .eq('user_id', memberIds[1])
-      if (profileError) {
-        throw profileError;
-      }
-      setProfileData(profileData);
-      console.log('profile DAta: ', { profileData })
-
-      // console.log('dskadasdad profile is', profileData)
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -243,14 +308,42 @@ const BudgetRoom = () => {
 
   };
 
+  const onUpdate = async (members) => {
+    try {
+      // Prepare the payload
+      const updates = members.map((member, index) => ({
+        id: roomMember[index].id, // Assuming roomMember array has unique identifiers for each member
+        role: member.role,
+      }));
 
-  console.log({ checkUserPermision })
+      // Update roles in Supabase
+      const { data, error } = await supabase
+        .from('joining_budget') // Replace with your table name
+        .update(updates, { onConflict: ['id'] }); // Use 'upsert' for insert/update
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Roles updated successfully:', data);
+      // Optionally, handle the updated data or refresh the member list
+
+    } catch (error) {
+      console.error('Error updating roles:', error);
+      // Optionally, display an error message to the user
+    }
+  };
+
+
   /// if not check data then navigate to pending page
   if (!checkUserPermision) {
     return <div> <Pending />  </div>
   }
 
   if (loading) return <div> <Loading /></div>
+  // console.log({ sessionId })
+
+  // console.log({ memberRole })
 
   return (
     <div className='px-5 lg:max-w-[70rem] mx-auto'>
@@ -289,7 +382,7 @@ const BudgetRoom = () => {
 
 
         {noteData.map((items, index) => {
-          if (items.create_by === sessionId.user.id) {
+          if (items.create_by.user_id === sessionId.user.id) {
             return (
               <div key={index}>
                 <div className='text-gray-500 text-sm mt-5 gap-2 flex justify-end'>
@@ -319,7 +412,7 @@ const BudgetRoom = () => {
                   <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={avatar} alt="" />
                 </div>
                 <div className='border-b'>
-                  <p className='text-gray-700 font-medium'>Name of member</p>
+                  <p className='text-gray-700 font-medium'>{items.create_by.full_name}</p>
 
                   <p className='text-blue-500 font-bold'>
                     {items.status === 'PAY' ? (
@@ -338,69 +431,152 @@ const BudgetRoom = () => {
       </div>
 
       {isVisible && (
-        <div className='w-full transition-all duration-1000 ease-in-out'>
-          <div className='px-[1rem] fixed rounded-lg border xl:left-80 xl:right-80 bottom-1 left-4 right-4 bg-gray-100'>
-            <div className='p-3 mb-3 ml-4'>
-              <Button className='float-end text-orange-500' onClick={toggleVisibility}>
-                close
-              </Button>
-              <Button className='float-end mx-4 text-blue-500'>
-                apply
-              </Button>
-            </div>
-            <div>
-              <div className='w-full'>
-                <h1 className="text-xl pt-2 text-start font-bold leading-tight tracking-tight md:text-2xl">
-                  All member
-                </h1>
-                <p className='text-sm text-gray-400 mt-2 mb-5'>It's will be push to everyone and you can't edit later.</p>
-              </div>
-              <div>
 
-                {checkUser.map((items, index) => {
-                  console.log(items.member, 'hsudhauda memver')
-                  console.log(profileData.id, 'hsudhauda ddata profile')
-                  if (items.member === profileData.id) {
-                    return (
-                      <div key={index} className='w-full px-4'>
-                        <div className='flex w-full justify-between items-center my-2'>
-                          <div className='flex gap-2 items-center'>
-                            <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
+        <div className='w-full transition-all duration-1000 ease-in-out'>
+
+
+          {memberRole === 'ADMIN' ? (
+            <Form
+              initialValues={{ members: roomMember.map(member => ({ role: member.role || 'MEMBER' })) }}
+              form={form}
+              onFinish={onUpdate}
+            >
+              <div className='px-[1rem] fixed rounded-lg border xl:left-80 xl:right-80 bottom-1 left-4 right-4 bg-gray-100'>
+
+                <div className='p-3 mb-3 ml-4'>
+                  <Button className='float-end text-orange-500' onClick={toggleVisibility}>
+                    close
+                  </Button>
+                  <Form.Item>
+                    <Button
+                      htmlType="submit"
+                      className='float-end mx-4 text-blue-500'
+                    >
+                      apply
+                    </Button>
+                  </Form.Item>
+                  {/* <Button className='float-end mx-4 text-blue-500'>
+                    apply
+                  </Button> */}
+                </div>
+                <div>
+                  <div className='w-full'>
+                    <h1 className="text-xl pt-2 text-start font-bold leading-tight tracking-tight md:text-2xl">
+                      All member
+                    </h1>
+                    <p className='text-sm text-gray-400 mt-2 mb-5'>It's will be push to everyone and you can't edit later.</p>
+                  </div>
+                  <div>
+
+                    {roomMember.map((items, index) => {
+                      // console.log('items: ', items)
+                      // console.log(profileData.id, 'hsudhauda ddata profile')
+                      // if (items.member === profileData.id) {
+                      return (
+                        <div key={index} className='w-full px-4'>
+                          <div className='flex w-full justify-between items-center my-2'>
+                            <div className='flex gap-2 items-center'>
+                              <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
+                              <div>
+                                <p className='text-sm'>{items.user_profile.full_name}</p>
+                                <p className='text-sm text-blue-500'>{items.user_profile.phone}</p>
+                              </div>
+                            </div>
                             <div>
-                              <p className='text-sm'>{profileData.full_name}</p>
-                              <p className='text-sm text-blue-500'>284249203</p>
+
+                              {/* <Form.Item
+                                type="hidden"
+                                name="member"
+                              // className='hidden'
+                              >
+                                <Input>{items.id}</Input>
+                              </Form.Item> */}
+                              <Form.Item
+                                className="text-gray-400 w-[100px]"
+                                name={['members', index, 'role']}
+                                rules={[{ required: true, message: "" }]}
+                              >
+
+                                <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
+                                  <Option value="ADMIN">Admin</Option>
+                                  <Option value="MEMBER">Member</Option>
+
+                                </Select>
+                              </Form.Item>
+
                             </div>
                           </div>
-                          <div>
-                            {role === 'Menber' ? (
-                              <Form initialValues={{ role: 'admin' }}>
-                                <Form.Item
-                                  className="text-gray-400 w-[100px]"
-                                  name="role"
-                                  rules={[{ required: true, message: "" }]}
-                                >
+                        </div>
+                      )
+                      // }
+                    })}
+                  </div>
+                </div>
 
-                                  <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
-                                    <Option value="admin">Admin</Option>
-                                    <Option value="admin">Member</Option>
+              </div>
+            </Form>
 
-                                  </Select>
-                                </Form.Item>
-                              </Form>
-                            ) : (
+
+          ) : (
+
+            <div className=''>
+
+              <div className='px-[1rem] fixed rounded-lg border xl:left-80 xl:right-80 bottom-1 left-4 right-4 bg-gray-100'>
+
+                <div className='p-3 mb-3 ml-4'>
+                  <Button className='float-end text-orange-500' onClick={toggleVisibility}>
+                    close
+                  </Button>
+                </div>
+                <div>
+                  <div className='w-full'>
+                    <h1 className="text-xl pt-2 text-start font-bold leading-tight tracking-tight md:text-2xl">
+                      All member
+                    </h1>
+                    <p className='text-sm text-gray-400 mt-2 mb-5'>It's will be push to everyone and you can't edit later.</p>
+                  </div>
+                  <div>
+                    {roomMember.map((items, index) => {
+
+                      return (
+                        <div key={index} className='w-full px-4'>
+                          <div className='flex w-full justify-between items-center my-2'>
+                            <div className='flex gap-2 items-center'>
+                              <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
+                              <div>
+                                <p className='text-sm'>{items.user_profile.full_name}</p>
+                                <p className='text-sm text-blue-500'>{items.user_profile.phone}</p>
+                              </div>
+                            </div>
+                            <div>
+
                               <p className='text-blue-500'>{items.role}</p>
-                            )}
+
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )
-                  }
-                })}
+
+                      )
+
+
+                    })}
+                  </div>
+
+                </div>
               </div>
+
+
+
+
+
+
             </div>
-          </div>
+
+          )}
         </div>
-      )}
+
+      )
+      }
 
       <div>
         <Modal
@@ -461,7 +637,7 @@ const BudgetRoom = () => {
           </Form>
         </Modal>
       </div>
-    </div>
+    </div >
   );
 }
 
