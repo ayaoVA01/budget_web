@@ -71,9 +71,11 @@ const Headers = () => {
           </div>
           <div>
             <Badge dot={hasNotification} offset={[-10, 10]}>
-              <Button type="text" onClick={openNotification} className="mx-3">
-                <BellOutlined style={{ fontSize: '20px' }} />
-              </Button>
+              <Link to='/notification'>
+                <Button type="text" className="mx-3">
+                  <BellOutlined style={{ fontSize: '20px' }} />
+                </Button>
+              </Link>
             </Badge>
             <Popover content={<ProfilePopover />} title="Profile" trigger="click">
               <Button type="text">
