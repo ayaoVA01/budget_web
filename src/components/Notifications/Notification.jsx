@@ -17,83 +17,239 @@ const NotificationPage = () => {
         navigate(-1);
     };
 
+    // const fetchNotifications = async (userId) => {
+
+    //     /// the room that i join
+    //     const { data: roomJoined, error: roomJoinedErr } = await supabase
+    //         .from('joining_budget')
+    //         .select()
+    //         .eq('member', userId);
+
+    //     if (roomJoinedErr) {
+    //         throw roomJoinedErr
+    //     }
+    //     console.log({ roomJoined })
+
+    //     /// to tech all my notification
+    //     const myNotification = [];
+    //     await Promise.all(roomJoined.map(async (room, index) => {
+    //         console.log({ room });
+
+    //         // if (!room.allow) {
+    //         //     return null;
+    //         // }
+
+    //         const { data: noteNoti, error: noteNOtiErr } = await supabase
+    //             .from('notification')
+    //             .select(`
+    //             *,
+    //             budget:budget(id, budget_name, owner),
+    //             user_profile(*)
+    //         `)
+    //             .eq('budget_room', room.budget_id)
+    //             .eq('noti_type', 'NOTE')
+    //             .not('sender', 'eq', userId);
+
+    //         if (noteNOtiErr) {
+    //             console.error('Error fetching notifications:', noteNOtiErr);
+    //             return;
+    //         }
+
+    //         if (noteNoti) {
+    //             myNotification.push(...noteNoti);
+    //         }
+
+    //         // Fetch joining budget notification
+    //         const { data: fetchNotification, error: errorNotification } = await supabase
+    //             .from('notification')
+    //             .select(`
+    //             *,
+    //             budget:budget(id, budget_name, owner),
+    //             user_profile(*)
+    //         `)
+    //             .eq('budget.owner', userId)
+    //             .eq('budget_room', room.budget_id)
+    //             .eq('noti_type', 'ACCEPT_JOIN_ROOM')
+    //             .not('sender', 'eq', userId);
+
+    //         if (errorNotification) {
+    //             console.error('Error fetching notifications:', errorNotification);
+    //             return;
+    //         }
+
+    //         if (fetchNotification) {
+
+    //             fetchNotification.forEach(async notification => {
+    //                 const { data: allowJoining, error: allowJoiningError } = await supabase
+    //                     .from('joining_budget')
+    //                     .select()
+    //                     .eq('budget_id', notification.budget_room)
+    //                     .eq('member', notification.sender)
+    //                     .single();
+
+    //                 if (allowJoiningError) {
+    //                     throw allowJoiningError;
+    //                 }
+    //                 console.log({ allowJoining })
+    //                 notification.allow = allowJoining.allow; // Add allow field to each notification
+    //             });
+    //             myNotification.push(...fetchNotification);
+    //         }
+    //     }));
+
+    //     // console.log({ myNotification })
+    //     setNotifications(myNotification);
+    //     // fetchJoiningBudgetStatus(fetchNotification);
+
+    // };
+    // console.log({ notifications })
+
+
+    // useEffect(() => {
+    //     // Fetch initial data
+    //     fetchBudgetDataNew(roomId);
+    //     fetchNoteData();
+    //     const channel = supabase.channel('custom-all-channel');
+
+    //     // Subscribe to changes in the 'note' table
+    //     channel.on(
+    //         'postgres_changes',
+    //         { event: '*', schema: 'public', table: 'note', filter: `budget_id=eq.${roomId}` },
+    //         (payload) => {
+    //             console.log('Change in note table:', payload);
+    //             fetchNoteData(); // Re-fetch data when a change is detected in 'note' table
+    //         }
+    //     );
+
+    //     // Subscribe to changes in the 'budget' table
+    //     channel.on(
+    //         'postgres_changes',
+    //         { event: '*', schema: 'public', table: 'budget', filter: `id=eq.${roomId}` },
+    //         (payload) => {
+    //             console.log('Change in budget table:', payload);
+    //             fetchBudgetDataNew(roomId); // Re-fetch data when a change is detected in 'budget' table
+    //         }
+    //     );
+
+    //     // Subscribe to the channel
+    //     channel.subscribe((status) => {
+    //         if (status === 'SUBSCRIBED') {
+    //             console.log('Subscribed to changes.');
+    //         }
+    //     });
+
+
+    //     // Cleanup subscription on component unmount
+    //     return () => {
+    //         supabase.removeChannel(channel);
+    //     };
+
+
+    // }, [roomId]);
+
+
     const fetchNotifications = async (userId) => {
+        try {
+            // Fetch the rooms that the user has joined
+            const { data: roomJoined, error: roomJoinedErr } = await supabase
+                .from('joining_budget')
+                .select()
+                .eq('member', userId);
 
-        /// the room that i join
-        const { data: roomJoined, error: roomJoinedErr } = await supabase
-            .from('joining_budget')
-            .select()
-            .eq('member', userId);
-
-        if (roomJoinedErr) {
-            throw roomJoinedErr
-        }
-        console.log({ roomJoined })
-
-        const myNotification = [];
-        roomJoined.map(async (room) => {
-            console.log({ room })
-            const { data: noteNoti, error: noteNOtiErr } = await supabase
-                .from('notification')
-                .select(`
-                *,
-                budget:budget(id, budget_name, owner),
-                user_profile(*)
-            `)
-                .eq('budget_room', room.budget_id)
-                .eq(room.allow === true)
-                .eq('noti_type' === "NOTE");
-
-            console.log({ noteNoti })
-
-            const { data: fetchNotification, error: errorNotification } = await supabase
-                .from('notification')
-                .select(`
-                *,
-                budget:budget(id, budget_name, owner),
-                user_profile(*)
-            `)
-                .eq('budget.owner', userId)
-                .not('budget', 'is', null);
-
-            console.log({ fetchNotification })
-            if (errorNotification) {
-                console.error('Error fetching notifications:', errorNotification);
-            } else {
-                setNotifications(fetchNotification);
-                fetchJoiningBudgetStatus(fetchNotification);
+            if (roomJoinedErr) {
+                throw roomJoinedErr;
             }
-            return room; // or some other transformation
-        });
+            console.log({ roomJoined });
 
-    };
+            // To collect all notifications
+            const myNotification = [];
 
-    const fetDatafromJoiningBudget = async (budget_room, sender) => {
-        const { data: joinTable, error: joinTableError } = await supabase
-            .from('joining_budget')
-            .select()
-            .eq('budget_id', budget_room)
-            .eq('member', sender);
+            await Promise.all(roomJoined.map(async (room) => {
+                console.log({ room });
 
-        setBudget_Room(budget_room)
+                const { data: noteNoti, error: noteNOtiErr } = await supabase
+                    .from('notification')
+                    .select(`
+                    *,
+                    budget:budget(id, budget_name, owner),
+                    user_profile(*)
+                `)
+                    .eq('budget_room', room.budget_id)
+                    .eq('noti_type', 'NOTE')
+                    .not('sender', 'eq', userId);
 
-        console.log({ joinTable })
-        if (joinTableError) {
-            throw joinTableError;
+                if (noteNOtiErr) {
+                    console.error('Error fetching notifications:', noteNOtiErr);
+                    return;
+                }
+
+                if (noteNoti) {
+                    noteNoti.forEach(notification => {
+                        notification.allow = room.allow;
+                    });
+                    myNotification.push(...noteNoti);
+                }
+
+                const { data: fetchNotification, error: errorNotification } = await supabase
+                    .from('notification')
+                    .select(`
+                    *,
+                    budget:budget(id, budget_name, owner),
+                    user_profile(*)
+                `)
+                    .eq('budget.owner', userId)
+                    .eq('budget_room', room.budget_id)
+                    .eq('noti_type', 'ACCEPT_JOIN_ROOM')
+                    .not('sender', 'eq', userId);
+
+                if (errorNotification) {
+                    console.error('Error fetching notifications:', errorNotification);
+                    return;
+                }
+
+                if (fetchNotification) {
+                    fetchNotification.forEach(async notification => {
+                        const { data: allowJoining, error: allowJoiningError } = await supabase
+                            .from('joining_budget')
+                            .select()
+                            .eq('budget_id', notification.budget_room)
+                            .eq('member', notification.sender)
+                            .single();
+
+                        if (allowJoiningError) {
+                            throw allowJoiningError;
+                        }
+                        console.log({ allowJoining })
+                        notification.allow = allowJoining.allow; // Add allow field to each notification
+                    });
+                    myNotification.push(...fetchNotification);
+                }
+            }));
+
+            // console.log({ myNotification }, "out of loop");
+            return myNotification;
+        } catch (error) {
+            console.error('Error in fetchNotifications:', error.message);
+            throw error;
         }
-        return joinTable[0]?.allow; // Adjust this to match your data structure
-    };
-
-    const fetchJoiningBudgetStatus = async (notifications) => {
-        const status = {};
-        for (let item of notifications) {
-            const allow = await fetDatafromJoiningBudget(item.budget_room, item.sender);
-            status[item.id] = allow;
-        }
-        setJoiningBudgetStatus(status);
     };
 
     useEffect(() => {
+        const fetchAndSetNotifications = async () => {
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) {
+                console.error('Error fetching session:', sessionError);
+                return;
+            }
+            try {
+                const notifications = await fetchNotifications(sessionData.session.user.id);
+                setNotifications(notifications);
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        };
+
+        fetchAndSetNotifications();
         const getSessionAndSubscribe = async () => {
             const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
             if (sessionError) {
@@ -104,12 +260,13 @@ const NotificationPage = () => {
             const userId = sessionData.session.user.id;
             setSessionId(userId);
             fetchNotifications(userId);
+
             // fetDatafromJoiningBudget()
             const channel = supabase
                 .channel('custom-all-channel')
             channel.on(
                 'postgres_changes',
-                { event: '*', schema: 'public', table: 'joining_budget', filter: `budget_id=eq.${userId}` },
+                { event: '*', schema: 'public', table: 'notification', filter: `budget_id=eq.${userId}` },
                 (payload) => {
                     console.log('Change received!', payload);
                     fetchNotifications(userId);
@@ -132,11 +289,20 @@ const NotificationPage = () => {
         getSessionAndSubscribe();
     }, []);
 
-    useEffect(() => {
-        if (sessionId) {
-            fetchNotifications(sessionId);
-        }
-    }, [sessionId]);
+    // useEffect(() => {
+    //     const fetchAndSetNotifications = async () => {
+    //         try {
+    //             const notifications = await fetchNotifications(userId);
+    //             setNotifications(notifications);
+    //         } catch (error) {
+    //             console.error('Error fetching notifications:', error);
+    //         }
+    //     };
+
+    //     fetchAndSetNotifications();
+    // }, [userId]);
+
+
 
     const handleApprove = async (budget_room, sender) => {
         try {
@@ -155,10 +321,10 @@ const NotificationPage = () => {
                 description: 'Member has been approved.'
             });
 
-            setJoiningBudgetStatus((prevStatus) => ({
-                ...prevStatus,
-                [budget_room]: true,
-            }));
+            // setJoiningBudgetStatus((prevStatus) => ({
+            //     ...prevStatus,
+            //     [budget_room]: true,
+            // }));
 
         } catch (error) {
             console.error('Error approving notification:', error);
@@ -168,6 +334,7 @@ const NotificationPage = () => {
             });
         }
     };
+    console.log({ ready: notifications })
 
     return (
         <>
@@ -187,7 +354,7 @@ const NotificationPage = () => {
                                     actions={
                                         item.noti_type === 'ACCEPT_JOIN_ROOM'
                                             ? [
-                                                joiningBudgetStatus[item.id] === false
+                                                item.allow === false
                                                     ? <Button
                                                         type="primary"
                                                         onClick={() => handleApprove(item.budget_room, item.sender)}
@@ -206,11 +373,13 @@ const NotificationPage = () => {
                                                     <Button
                                                         type="dashed"
                                                         disabled
+                                                        className='hidden'
                                                     >
                                                         Approved
                                                     </Button>
-                                                ]
-                                                : null
+                                                ] :
+                                                null
+
                                     }
                                 >
                                     <Skeleton avatar title={false} loading={item.loading} active>
