@@ -1,23 +1,35 @@
-import React, { useState } from "react";
-import { Layout, notification, Button, Popover, List, Badge } from "antd";
-import { BellOutlined, UserOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../services/supabaseClient'; // Adjust the path as needed
+import { Layout, notification, Button, Popover, List, Badge } from 'antd';
+import { BellOutlined, UserOutlined } from '@ant-design/icons';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from "../../assets/images/logo.png";
-import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../../services/supabaseClient"; // Adjust path as needed
-
 const { Header } = Layout;
 
 const Headers = () => {
   const navigate = useNavigate(); // Hook for navigation
-  const [hasNotification, setHasNotification] = useState(true); // State to handle notification status
+  const [hasNotification, setHasNotification] = useState(false); // State to handle notification status
+  const [userData, setUserData] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
-  const openNotification = () => {
-    notification.open({
-      message: 'Notification Title',
-      description: 'This is the content of the notification. This notification will close automatically after 4.5 seconds.',
-      icon: <BellOutlined style={{ color: '#108ee9' }} />,
-    });
-    setHasNotification(false); // Reset notification status after opening
+  const fetchUserData = async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Error fetching session:', error);
+    }
+
+    const { data: userData, error: userDataError } = await supabase.from('user_profile')
+      .select()
+      .eq('user_id', data.session.user.id)
+      .single();
+    if (userDataError) {
+      console.error('Error fetching User data:', userDataError);
+    }
+
+    setUserData(userData.full_name);
+    console.log({ data });
+
+    console.log({ userData });
   };
 
   const handleLogout = async () => {
@@ -38,7 +50,7 @@ const Headers = () => {
   };
 
   const profileData = [
-    { key: 'name', label: 'Name of User' },
+    { key: 'name', label: `Hi 🖐! ${userData}` },
     { key: 'update', label: 'Update Profile' },
     { key: 'password', label: 'Change Password' },
     { key: 'logout', label: 'Logout' }, // Add Logout option
@@ -61,6 +73,33 @@ const Headers = () => {
     />
   );
 
+  const handleNotificationClick = () => {
+    setHasNotification(false);
+    // Implement logic to mark notifications as read
+  };
+
+  useEffect(() => {
+    fetchUserData();
+
+    const notificationListener = supabase
+      .channel('public:notification')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notification' }, payload => {
+        setNotifications(prevNotifications => [...prevNotifications, payload.new]);
+        setHasNotification(true);
+
+        // Browser Notification
+        new Notification("Notification", {
+          body: "text notification",
+          icon: "https://via.placeholder.com/150" // Optional: Add an icon to the notification
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationListener);
+    };
+  }, []);
+
   return (
     <div className="top-0">
       <Header className="bg-white mt-5">
@@ -72,7 +111,9 @@ const Headers = () => {
           <div>
             <Badge dot={hasNotification} offset={[-10, 10]}>
               <Link to='/notification'>
-                <Button type="text" className="mx-3">
+
+
+                <Button type="text" className="mx-3" onClick={handleNotificationClick}>
                   <BellOutlined style={{ fontSize: '20px' }} />
                 </Button>
               </Link>

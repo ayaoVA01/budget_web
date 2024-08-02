@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Headers from "../components/Layout/Header";
+
 import {
 
   Button,
@@ -16,6 +17,8 @@ const Home = () => {
     <>
       <div className="w-full h-[85vh] mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
         <Headers />
+
+
         <div className="w-full text-center p-6  bg-white  space-y-4 sm:p-8 rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200">
           <div className="my-[5%]">
             <Link to='/join' className="">

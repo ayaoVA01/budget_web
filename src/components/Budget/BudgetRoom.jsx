@@ -1,5 +1,5 @@
 import Headers from '../Layout/Header';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import avatar from '../../assets/images/stickman.webp';
 import { Button, Form, Input, InputNumber, Select, Modal, notification } from 'antd';
 import { Link, useParams } from 'react-router-dom';
@@ -29,6 +29,7 @@ const BudgetRoom = () => {
   const [checkUserPermision, setCheckUserPermision] = useState(null);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const bottomRef = useRef(null);
   // console.log(roomId)
   //  fetch session id
   useEffect(() => {
@@ -144,6 +145,7 @@ const BudgetRoom = () => {
     // Fetch initial data
     fetchBudgetDataNew(roomId);
     fetchNoteData();
+
     const channel = supabase.channel('custom-all-channel');
 
     // Subscribe to changes in the 'note' table
@@ -173,7 +175,7 @@ const BudgetRoom = () => {
       }
     });
 
-
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     // Cleanup subscription on component unmount
     return () => {
       supabase.removeChannel(channel);
@@ -452,6 +454,7 @@ const BudgetRoom = () => {
                     <img className='w-[30px] h-[30px] object-contain rounded-[100%] border' src={avatar} alt="" />
                   </div>
                 </div>
+
               </div>
             )
           } else {
@@ -472,12 +475,14 @@ const BudgetRoom = () => {
                     ₩ {items.amount}</p>
                   <p className='p-3'>{items.description}</p>
                 </div>
+
               </div>
             )
           }
         }
         )}
       </div>
+      <div ref={bottomRef} />
 
       {isVisible && (
 
@@ -688,6 +693,7 @@ const BudgetRoom = () => {
           </Form>
         </Modal>
       </div>
+
     </div >
   );
 }
