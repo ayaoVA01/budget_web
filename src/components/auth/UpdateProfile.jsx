@@ -26,16 +26,27 @@ const UpdateProfile = () => {
     };
 
     // Handle image change
-    const handleImageChange = info => {
-        const file = info.file.originFileObj;
-        const reader = new FileReader();
+    const handleImageChange = async (info) => {
+        console.log({ info: info.file.type })
+        const formatImageType = info.file.type.split('/')[1];
+        // const reader = new FileReader();
 
-        reader.onload = () => {
-            setImageUrl(reader.result);
-            setImageName(file.name); // Set the image name
-        };
 
-        reader.readAsDataURL(file);
+        const { data: uploadSingedUrl, error: uploadError } = await supabase
+            .storage
+            .from('budget_note_file')
+            // .createSignedUploadUrl('folder/cat.jpg');
+            .getPublicUrl('folder/cat.jpg');
+
+        // .createSignedUploadUrl(`avatar/${info.file.uid}.${formatImageType}`);
+        console.log({ uploadSingedUrl })
+        if (uploadSingedUrl) {
+            console.log({ uploadSingedUrl })
+            // setImageUrl(reader.result);
+            // setImageName(info.file.uid);
+        }
+
+        // reader.readAsDataURL(file);
     };
 
     // Load initial user data

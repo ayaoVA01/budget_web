@@ -10,6 +10,7 @@ import {
 import { supabase } from '../../services/supabaseClient';
 import Loading from '../loading/Loading'
 import Pending from '../loading/Pending';
+import Popup from '../popup/Popup';
 // import { data } from 'autoprefixer';
 const { Option } = Select;
 
@@ -26,6 +27,8 @@ const BudgetRoom = () => {
   const [sessionId, setSessionId] = useState(null);
   const [roomMember, setRoomMember] = useState(null);
   const [checkUserPermision, setCheckUserPermision] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
   // console.log(roomId)
   //  fetch session id
   useEffect(() => {
@@ -309,29 +312,46 @@ const BudgetRoom = () => {
   };
 
   const onUpdate = async (members) => {
-    try {
-      // Prepare the payload
-      const updates = members.map((member, index) => ({
-        id: roomMember[index].id, // Assuming roomMember array has unique identifiers for each member
-        role: member.role,
-      }));
 
-      // Update roles in Supabase
-      const { data, error } = await supabase
-        .from('joining_budget') // Replace with your table name
-        .update(updates, { onConflict: ['id'] }); // Use 'upsert' for insert/update
+    // Update member roles 
+    let allUpdates = [];
 
-      if (error) {
-        throw error;
-      }
+    for (const member of members.members) {
+      const { member_id, role } = member;
 
-      console.log('Roles updated successfully:', data);
-      // Optionally, handle the updated data or refresh the member list
+      // Prepare the update promise
+      const updatePromise = supabase
+        .from('joining_budget') // Replace with your actual table name
+        .update({ role })
+        .eq('id', member_id)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error(`Error updating role for member_id ${member_id}:`, error);
+            throw error;
+          }
+          console.log(`Successfully updated role for member_id ${member_id}:`, data);
+          return data;
+        })
+        .catch(error => {
+          console.error(`Unexpected error updating role for member_id ${member_id}:`, error);
+        });
 
-    } catch (error) {
-      console.error('Error updating roles:', error);
-      // Optionally, display an error message to the user
+      allUpdates.push(updatePromise);
     }
+
+    // Wait for all updates to complete
+    try {
+      await Promise.all(allUpdates);
+      console.log('All updates complete.');
+      setSuccess(true)
+    } catch (error) {
+      console.error('One or more updates failed:', error);
+    }
+  };
+
+  const handlePopupClose = () => {
+    setSuccess(false);
+    setError(null);
   };
 
 
@@ -379,6 +399,22 @@ const BudgetRoom = () => {
             <PlusCircleFilled className='text-blue-500' />
           </Button>
         </div>
+
+        {success && (
+          <Popup
+            message='Update Member Role Successfully!'
+            type='success'
+            onClose={handlePopupClose}
+          />
+        )}
+        {error && (
+          <Popup
+            message={`Error: ${error}`}
+            type='error'
+            duration={3000}
+            onClose={handlePopupClose}
+          />
+        )}
 
 
         {noteData.map((items, index) => {
@@ -437,7 +473,7 @@ const BudgetRoom = () => {
 
           {memberRole === 'ADMIN' ? (
             <Form
-              initialValues={{ members: roomMember.map(member => ({ role: member.role || 'MEMBER' })) }}
+              // initialValues={{ members: roomMember.map(member => ({ role: member.role || 'MEMBER' })) }}
               form={form}
               onFinish={onUpdate}
             >
@@ -484,17 +520,19 @@ const BudgetRoom = () => {
                             </div>
                             <div>
 
-                              {/* <Form.Item
-                                type="hidden"
-                                name="member"
-                              // className='hidden'
+                              <Form.Item
+                                className=""
+                                name={['members', index, 'member_id']}
+                                initialValue={items.id}
+                                style={{ display: 'none' }}
                               >
-                                <Input>{items.id}</Input>
-                              </Form.Item> */}
+                                <Input type="hidden" />
+                              </Form.Item>
                               <Form.Item
                                 className="text-gray-400 w-[100px]"
                                 name={['members', index, 'role']}
                                 rules={[{ required: true, message: "" }]}
+                                initialValue={items.role}
                               >
 
                                 <Select className="border-t-0 h-10 border-l-0 border-r-0 shadow-none focus:ring-0 focus:outline-none outline-none">
