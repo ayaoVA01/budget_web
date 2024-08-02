@@ -222,7 +222,8 @@ const BudgetRoom = () => {
         .from('budget')
         .update({ budget_amount: amount })
         .eq('id', roomId)
-        .select();
+        .select()
+        .single();
 
       if (intoBudgetError) {
         throw intoBudgetError;
@@ -231,9 +232,21 @@ const BudgetRoom = () => {
         message: 'Success!',
 
       });
+      console.log({ intoBudget })
 
 
       // console.log('Inserted data:', data);
+
+      const { data: notiData, error: notiErr } = await supabase
+        .from('notification')
+        .insert([{ budget_room: roomId, description: `User ${userData.data.session.user.email} ${status} ${budget} in room ${intoBudget.budget_name}`, sender: userData.data.session.user.id, noti_type: 'NOTE' }])
+        .select();
+
+      if (notiErr) {
+        throw notiErr;
+      }
+      console.log({ notiData })
+
     } catch (error) {
       notification.error({
         message: 'Oop! try again later.',
