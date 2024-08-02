@@ -9,113 +9,156 @@ import avatar from '../../assets/images/stickman.webp';
 const NotificationPage = () => {
     const [notifications, setNotifications] = useState([]);
     const [sessionId, setSessionId] = useState(null);
-    const [joinData, setJoinData] = useState([]);
+    const [budget_Room, setBudget_Room] = useState(null)
+    const [joiningBudgetStatus, setJoiningBudgetStatus] = useState({});
     const navigate = useNavigate();
 
     const handleBack = () => {
         navigate(-1);
     };
 
-    const fetchNotifications = async () => {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-            console.error('Error fetching session:', sessionError);
-            return;
+    const fetchNotifications = async (userId) => {
+
+        /// the room that i join
+        const { data: roomJoined, error: roomJoinedErr } = await supabase
+            .from('joining_budget')
+            .select()
+            .eq('member', userId);
+
+        if (roomJoinedErr) {
+            throw roomJoinedErr
         }
+        console.log({ roomJoined })
 
-        const userId = sessionData.session.user.id;
-        setSessionId(userId);
-
-        const { data: fetchNotification, error: errorNotification } = await supabase
-            .from('notification')
-            .select(`
+        const myNotification = [];
+        roomJoined.map(async (room) => {
+            console.log({ room })
+            const { data: noteNoti, error: noteNOtiErr } = await supabase
+                .from('notification')
+                .select(`
                 *,
                 budget:budget(id, budget_name, owner),
                 user_profile(*)
             `)
-            .eq('budget.owner', userId)
-            .not('budget', 'is', null);
+                .eq('budget_room', room.budget_id)
+                .eq(room.allow === true)
+                .eq('noti_type' === "NOTE");
 
-        if (errorNotification) {
-            console.error('Error fetching notifications:', errorNotification);
-        } else {
-            setNotifications(fetchNotification);
-        }
+            console.log({ noteNoti })
 
+            const { data: fetchNotification, error: errorNotification } = await supabase
+                .from('notification')
+                .select(`
+                *,
+                budget:budget(id, budget_name, owner),
+                user_profile(*)
+            `)
+                .eq('budget.owner', userId)
+                .not('budget', 'is', null);
 
-        console.log({ fetchNotification })
-
+            console.log({ fetchNotification })
+            if (errorNotification) {
+                console.error('Error fetching notifications:', errorNotification);
+            } else {
+                setNotifications(fetchNotification);
+                fetchJoiningBudgetStatus(fetchNotification);
+            }
+            return room; // or some other transformation
+        });
 
     };
-//NGZiYjE2NWQtZThiOS00YTIyLTlhNzQtMjgxMDZkZDUwZmRl = yao test
-    const fetDatafromJoiningBudget = async (budget_room, sender) => {
 
+    const fetDatafromJoiningBudget = async (budget_room, sender) => {
         const { data: joinTable, error: joinTableError } = await supabase
             .from('joining_budget')
             .select()
             .eq('budget_id', budget_room)
-            .eq('member', sender)
-            // .single();
+            .eq('member', sender);
 
+        setBudget_Room(budget_room)
+
+        console.log({ joinTable })
         if (joinTableError) {
             throw joinTableError;
         }
+        return joinTable[0]?.allow; // Adjust this to match your data structure
+    };
 
-        console.log("dasdasd",budget_room)
-        console.log("dasdasd sender",sender)
-        console.log("Hello",{joinTable})
-        return joinTable.allow;
-    }
+    const fetchJoiningBudgetStatus = async (notifications) => {
+        const status = {};
+        for (let item of notifications) {
+            const allow = await fetDatafromJoiningBudget(item.budget_room, item.sender);
+            status[item.id] = allow;
+        }
+        setJoiningBudgetStatus(status);
+    };
 
     useEffect(() => {
-        fetchNotifications();
+        const getSessionAndSubscribe = async () => {
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) {
+                console.error('Error fetching session:', sessionError);
+                return;
+            }
 
-        // Uncomment and update the following for real-time updates if needed
-        const channel = supabase
-            .channel('custom-all-channel')
-            .on(
+            const userId = sessionData.session.user.id;
+            setSessionId(userId);
+            fetchNotifications(userId);
+            // fetDatafromJoiningBudget()
+            const channel = supabase
+                .channel('custom-all-channel')
+            channel.on(
                 'postgres_changes',
-                { event: '*', schema: 'public', table: 'notification' },
+                { event: '*', schema: 'public', table: 'joining_budget', filter: `budget_id=eq.${userId}` },
                 (payload) => {
                     console.log('Change received!', payload);
-                    fetchNotifications(); // Re-fetch data when a change is detected
+                    fetchNotifications(userId);
+                    // fetDatafromJoiningBudget() // Re-fetch data when a change is detected
                 }
             )
-            .subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    console.log('Subscribed to changes.');
-                }
-            });
 
-        return () => {
-            supabase.removeChannel(channel);
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('Subscribed to changes.');
+                    }
+                });
+
+            // Cleanup subscription on component unmount
+            return () => {
+                supabase.removeChannel(channel);
+            };
         };
+
+        getSessionAndSubscribe();
+    }, []);
+
+    useEffect(() => {
+        if (sessionId) {
+            fetchNotifications(sessionId);
+        }
     }, [sessionId]);
 
-    const handleApprove = async (budget_room) => {
+    const handleApprove = async (budget_room, sender) => {
         try {
             const { data: accept, error: acceptError } = await supabase
                 .from('joining_budget')
-                .update({ allow: false })
+                .update({ allow: true })
                 .eq('budget_id', budget_room)
+                .eq('member', sender)
                 .select();
-
             if (acceptError) {
                 throw acceptError;
             }
-
+            console.log({ accept });
             antNotification.success({
                 message: 'Success!',
                 description: 'Member has been approved.'
             });
 
-            // const updatedNotifications = notifications.map(notification =>
-            //     notification.id === id ? { ...notification, noti_type: 'ACCEPT_JOIN_ROOM' } : notification
-            // );
-            // setNotifications(updatedNotifications);
-
-            // console.log({ accept });
-            // console.log(notifications);
+            setJoiningBudgetStatus((prevStatus) => ({
+                ...prevStatus,
+                [budget_room]: true,
+            }));
 
         } catch (error) {
             console.error('Error approving notification:', error);
@@ -139,39 +182,35 @@ const NotificationPage = () => {
                         <List
                             itemLayout="horizontal"
                             dataSource={notifications}
-
                             renderItem={(item) => (
-
                                 <List.Item
                                     actions={
-
-                                        // item.noti_type === 'NOTE'
-
-                                        fetDatafromJoiningBudget(item.budget_room, item.sender).then(result => (
-                                            
-                                            result
-
-
+                                        item.noti_type === 'ACCEPT_JOIN_ROOM'
+                                            ? [
+                                                joiningBudgetStatus[item.id] === false
+                                                    ? <Button
+                                                        type="primary"
+                                                        onClick={() => handleApprove(item.budget_room, item.sender)}
+                                                    >
+                                                        Approve
+                                                    </Button>
+                                                    : <Button
+                                                        type="dashed"
+                                                        disabled
+                                                    >
+                                                        Approved
+                                                    </Button>
+                                            ]
+                                            : item.noti_type === 'NOTE'
                                                 ? [
                                                     <Button
-                                                        type="primary"
-                                                        onClick={() => handleApprove(item.budget_room)}
+                                                        type="dashed"
+                                                        disabled
                                                     >
-                                                        Approve 
+                                                        Approved
                                                     </Button>
-                                                    
                                                 ]
-                                                : item.noti_type === 'ACCEPT_JOIN_ROOM'
-                                                    ? [
-                                                        <Button
-                                                            type="dashed"
-                                                            disabled
-                                                        >
-                                                            Approved
-                                                        </Button>
-                                                    ]
-                                                    : null
-                                        ))
+                                                : null
                                     }
                                 >
                                     <Skeleton avatar title={false} loading={item.loading} active>
