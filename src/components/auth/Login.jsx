@@ -103,12 +103,12 @@ export default function Signin() {
                             </Form.Item>
 
 
-                            <p className="text-sm font-sm  text-gray-400 mb-4 ">
+                            {/* <p className="text-sm font-sm  text-gray-400 mb-4 ">
                                 For got password ?{" "}
                                 <Link to="#" className="font-medium text-blue-500">
                                     Reset password
                                 </Link>
-                            </p>
+                            </p> */}
 
 
                             <Form.Item>

@@ -4,6 +4,7 @@ import { Layout, notification, Button, Popover, List, Badge } from 'antd';
 import { BellOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from "../../assets/images/logo.png";
+// import BrowserNotification from '../Notifications/BowserNotification';
 const { Header } = Layout;
 
 const Headers = () => {
