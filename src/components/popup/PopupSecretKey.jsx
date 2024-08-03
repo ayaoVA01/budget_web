@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button, message } from 'antd';
 import { CheckCircleTwoTone, RightCircleOutlined, LeftCircleOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+
 import { useNavigate } from 'react-router-dom';
 import { decodeKey } from '../../utils/BudgetRoomSecrete';
+import { CloseOutlined } from '@ant-design/icons';
 
 const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
+    const [close, setClose] = useState(false);
     const [textToManage, setTextToManage] = useState(Scretkey);
     const navigate = useNavigate();
     const handleCopy = () => {
@@ -27,7 +29,11 @@ const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
         a.click();
         window.URL.revokeObjectURL(url);
         message.success('Text exported to file!');
-        navigate(`/room/${roomId}`)
+        // navigate(`/room/${roomId}`)
+        setClose(true)
+        navigate(window.open(`http://localhost:5173/room/${roomId}`, '_blank'));
+
+
     };
 
     // useEffect(() => {
@@ -42,12 +48,19 @@ const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
         <div className={`fixed z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4`}>
             <div className="relative top-40 mx-auto shadow-xl rounded-md bg-white max-w-md">
                 <div className="flex justify-end p-2">
-                    <button
-                        onClick={onClose}
-                        type="button"
-                        className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-                    >
-                    </button>
+
+                    {close ? (
+
+
+                        <button
+                            onClick={onClose}
+                            type="button"
+                            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+                        >
+                            <CloseOutlined />
+
+                        </button>
+                    ) : null}
                 </div>
                 <div className="p-6 pt-0 text-center">
                     {type === 'success' ? (

@@ -7,7 +7,6 @@ import { supabase } from '../../services/supabaseClient';
 import avatar from '../../assets/images/stickman.webp';
 import moment from 'moment';
 import Loading from '../loading/Loading';
-
 const NotificationPage = () => {
     const [notifications, setNotifications] = useState([]);
     const [sessionId, setSessionId] = useState(null);
@@ -80,6 +79,7 @@ const NotificationPage = () => {
                     console.error('Error fetching notifications:', errorNotification);
                     return;
                 }
+                setBudget_Room(room.budget_id)
 
                 if (fetchNotification) {
 
@@ -121,6 +121,7 @@ const NotificationPage = () => {
             return;
         } finally {
             setLoading(false);
+
         }
     };
     // console.log({ notifications })
@@ -266,12 +267,16 @@ const NotificationPage = () => {
                                     >
                                         <Skeleton avatar title={false} loading={item.loading} active>
                                             <List.Item.Meta
-
                                                 avatar={<Avatar src={avatar} />}
-                                                children={moment(item.created_at).format('MMMM Do YYYY, h:mm a')}
-                                                title={item.noti_type === 'ACCEPT_JOIN_ROOM' ? 'Join Request' : item.budget.budget_name}
-                                                description={moment(item.created_at).format('DD MM yyyy, h:mm a')}
-                                            // description={item.description}
+                                                title={
+                                                    <>
+                                                        <div style={{ fontSize: '0.8em', color: 'gray' }}>
+                                                            {moment(item.created_at).format('MMMM Do YYYY ')}
+                                                        </div>
+                                                        <div>{item.noti_type === 'ACCEPT_JOIN_ROOM' ? 'Join Request' : item.budget.budget_name}</div>
+                                                    </>
+                                                }
+                                                description={item.description}
                                             />
                                         </Skeleton>
                                     </List.Item>

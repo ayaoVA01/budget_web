@@ -12,6 +12,7 @@ const Headers = () => {
   const [hasNotification, setHasNotification] = useState(false); // State to handle notification status
   const [userData, setUserData] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   const fetchUserData = async () => {
     const { data, error } = await supabase.auth.getSession();
@@ -26,6 +27,7 @@ const Headers = () => {
     if (userDataError) {
       console.error('Error fetching User data:', userDataError);
     }
+    setUserId(data.session.user.id)
 
     setUserData(userData.full_name);
     console.log({ data });
@@ -79,9 +81,36 @@ const Headers = () => {
     // Implement logic to mark notifications as read
   };
 
+
+
   useEffect(() => {
     fetchUserData();
 
+
+    // const fetchNotifications = async () => {
+
+    //   // const { data: initialNotifications, error: fetchError } = await supabase
+    //   //   .from('notification')
+    //   //   .select(`
+    //   //     *,
+    //   //     budget:budget(id, budget_name, owner),
+    //   //     user_profile(*)
+    //   // `)
+    //   //   .eq('budget.owner', userId)
+    //   //   .eq('noti_type', 'ACCEPT_JOIN_ROOM')
+    //   // // .not('sender', 'eq', userId)// Order by created_at descending
+    //   // // .limit(1);
+
+    //   // if (fetchError) {
+    //   //   throw new Error('Error fetching notifications:', fetchError);
+    //   // }
+    //   // const latestNotification = initialNotifications.length > 0 ? initialNotifications[0] : null;
+
+    //   console.log('Fetching notifications', latestNotification)
+
+
+    // }
+    // fetchNotifications();
     const notificationListener = supabase
       .channel('public:notification')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notification' }, payload => {
@@ -95,10 +124,13 @@ const Headers = () => {
         });
       })
       .subscribe();
-
+    console.log({ notificationListener })
     return () => {
       supabase.removeChannel(notificationListener);
+
+
     };
+
   }, []);
 
   return (
