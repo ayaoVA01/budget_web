@@ -90,8 +90,7 @@ const NotificationPage = () => {
                                 .from('joining_budget')
                                 .select('*', { headers: { Accept: 'application/json' } })
                                 .eq('budget_id', notification.budget_room)
-                                .eq('member', notification.sender)
-                                .single();
+                                .eq('member', notification.sender);
 
                             // If there's an error or no data is returned, log the error and skip this iteration
                             if (allowJoiningError || !allowJoining) {
@@ -103,7 +102,7 @@ const NotificationPage = () => {
                             console.log({ allowJoining });
 
                             // Add the allow field to the notification
-                            notification.allow = allowJoining.allow;
+                            notification.allow = allowJoining[0].allow;
                         } catch (err) {
                             console.error('Error processing notification:', err);
                         }
@@ -137,46 +136,51 @@ const NotificationPage = () => {
             const userId = sessionData.session.user.id;
             setSessionId(userId);
             fetchNotifications(userId);
-
-            // fetDatafromJoiningBudget()
-            const channel = supabase.channel('custom-all-channel');
-
-            // Subscribe to changes in the 'joining_budget' table
-            channel.on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'joining_budget' },
-                (payload) => {
-                    console.log('Change in note table:', payload);
-                    fetchNotifications(userId); // Re-fetch notifications when apprved
-                }
-            );
-
-            // Subscribe to changes in the 'budget' table
-            channel.on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'notification' },
-                (payload) => {
-                    console.log('Change in budget table:', payload);
-                    fetchNotifications(userId); // Re-fetch data when a change is detected in 'budget' table
-                }
-            );
-
-            // Subscribe to the channel
-            channel.subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    console.log('Subscribed to changes.');
-                }
-            });
-
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-            // Cleanup subscription on component unmount
-            return () => {
-                supabase.removeChannel(channel);
-            };
         };
 
         getSessionAndSubscribe();
     }, []);
+
+    useEffect(() => {
+        console.log({ " session id in realtime": sessionId })
+        const channel = supabase.channel('public:notifications')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'joining_budget', filter: `member=eq.${sessionId}` },
+                async (payload) => {
+                    console.log('Change in joining_budget table:', payload);
+                    await fetchNotifications(sessionId); // Re-fetch notifications when approved
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'notification', filter: `sender=eq.${sessionId}` },
+                async (payload) => {
+                    console.log('Change in notification table:', payload);
+                    await fetchNotifications(sessionId); // Re-fetch data when a change is detected in 'notification' table
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log("subscribe: ", status)
+                }
+            });
+
+        // Handle potential errors or disconnections
+        channel.on('error', (error) => {
+            console.error('Error in subscription:', error);
+        });
+
+        channel.on('close', () => {
+            console.log('Subscription closed');
+        });
+        // Cleanup subscription on component unmount
+        return () => {
+            supabase.removeChannel(channel);
+        };
+
+    }, [sessionId]);
+    // console.log({ sessionId })
 
 
 
@@ -192,6 +196,11 @@ const NotificationPage = () => {
                 throw acceptError;
             }
             // console.log({ accept });
+            if (accept) {
+
+                await fetchNotifications(sessionId)
+            }
+
             antNotification.success({
                 message: 'Success!',
                 description: 'Member has been approved.'
