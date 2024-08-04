@@ -68,7 +68,7 @@ const JoinBuget = () => {
       console.log({ userJoined })
       if (userJoined) {
         console.log("alreaedy joined")
-        navigetor(window.open(`http://localhost:5173/room/${verrifileBudget.id}`, '_blank'))
+        navigetor(window.open(`room/${verrifileBudget.id}`, '_blank'))
         // navigetor()
         // navigetor(`/room/${verrifileBudget.id}`)
         handleReset();
