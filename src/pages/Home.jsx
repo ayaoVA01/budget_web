@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState, useEffect } from "react";
 import Headers from "../components/Layout/Header";
 import {
 
@@ -10,7 +10,30 @@ import {
   PlusCircleFilled
 } from "@ant-design/icons";
 
+// import sendFCMNotification from "../components/Notifications/sendNotification.jsx";
+import requestFCMPermission from "../components/Notifications/requestFCMPermission.jsx";
 const Home = () => {
+  // test no ti fi cation
+
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const fcmToken = await requestFCMPermission();
+      setToken(fcmToken);
+    };
+
+    fetchToken();
+  }, []);
+  console.log({ token })
+
+  // const handleSendNotification = () => {
+  //   if (token) {
+  //     sendFCMNotification(token, 'Test Notification', 'This is a test notification');
+  //   } else {
+  //     console.error('No FCM token available');
+  //   }
+  // };
   return (
     <>
       <div className="w-full h-[85vh] mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
@@ -29,6 +52,12 @@ const Home = () => {
                 <PlusCircleFilled className="text-[50px]  text-blue-500" />
               </Button>
             </Link>
+
+
+            <div>
+              <h1>React FCM Notification</h1>
+              {/* <button onClick={handleSendNotification}>Send Notification</button> */}
+            </div>
           </div>
         </div>
       </div>

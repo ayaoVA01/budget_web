@@ -14,6 +14,7 @@ import UpdateProfile from './components/auth/UpdateProfile';
 import { AuthProvider } from './components/common/AuthContext';
 import PrivateRoute from './components/common/PrivateRoute';
 import NotificationPage from './components/Notifications/Notification';
+
 // import Footer from './components/Layout/Footer';
 function App() {
   return (
@@ -29,7 +30,7 @@ function App() {
           <Route path="/join" element={<PrivateRoute element={<JoinBudget />} />} />
           <Route path="/room/:roomId" element={<PrivateRoute element={<BudgetRoom />} />} />
           <Route path="/notification" element={<PrivateRoute element={<NotificationPage />} />} />
-   
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

@@ -31,7 +31,7 @@ const Popup = ({ type, message: popupMessage, onClose, Scretkey }) => {
         message.success('Text exported to file!');
         // navigate(`/room/${roomId}`)
         setClose(true)
-        navigate(window.open(`http://localhost:5173/room/${roomId}`, '_blank'));
+        navigate(window.open(`room/${roomId}`, '_blank'));
 
 
     };

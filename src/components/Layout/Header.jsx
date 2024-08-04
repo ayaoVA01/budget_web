@@ -87,49 +87,51 @@ const Headers = () => {
     fetchUserData();
 
 
-    // const fetchNotifications = async () => {
+    const fetchNotifications = async () => {
 
-    //   // const { data: initialNotifications, error: fetchError } = await supabase
-    //   //   .from('notification')
-    //   //   .select(`
-    //   //     *,
-    //   //     budget:budget(id, budget_name, owner),
-    //   //     user_profile(*)
-    //   // `)
-    //   //   .eq('budget.owner', userId)
-    //   //   .eq('noti_type', 'ACCEPT_JOIN_ROOM')
-    //   // // .not('sender', 'eq', userId)// Order by created_at descending
-    //   // // .limit(1);
+      const { data: initialNotifications, error: fetchError } = await supabase
+        .from('notification')
+        .select(`
+          *,
+          budget:budget(*),
+          user_profile(*)
+      `)
+        // .eq('budget.owner', userId)
+        // .eq('noti_type', 'ACCEPT_JOIN_ROOM')
+        // .not('sender', 'eq', userId)// Order by created_at descending
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-    //   // if (fetchError) {
-    //   //   throw new Error('Error fetching notifications:', fetchError);
-    //   // }
-    //   // const latestNotification = initialNotifications.length > 0 ? initialNotifications[0] : null;
+      if (fetchError) {
+        throw new Error('Error fetching notifications:', fetchError);
+      }
+      // const latestNotification = initialNotifications.length > 0 ? initialNotifications[0] : null;
 
-    //   console.log('Fetching notifications', latestNotification)
+      console.log('Fetching notifications', initialNotifications.user_profile.full_name)
+
+      const notificationListener = supabase
+        .channel('public:notification')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notification' }, payload => {
+          setNotifications(prevNotifications => [...prevNotifications, payload.new]);
+          setHasNotification(true);
+
+          // Browser Notification
+          // new Notification(initialNotifications.user_profile.full_name, {
+          //   body: initialNotifications.budget.budget_name,
+          //   icon: initialNotifications.user_profile.image
+
+          //   // Optional: Add an icon to the notification
+          // });
+        })
+        .subscribe();
+      console.log({ notificationListener })
+      return () => {
+        supabase.removeChannel(notificationListener);
 
 
-    // }
-    // fetchNotifications();
-    const notificationListener = supabase
-      .channel('public:notification')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notification' }, payload => {
-        setNotifications(prevNotifications => [...prevNotifications, payload.new]);
-        setHasNotification(true);
-
-        // Browser Notification
-        new Notification("Notification", {
-          body: "text notification",
-          icon: "https://via.placeholder.com/150" // Optional: Add an icon to the notification
-        });
-      })
-      .subscribe();
-    console.log({ notificationListener })
-    return () => {
-      supabase.removeChannel(notificationListener);
-
-
-    };
+      };
+    }
+    fetchNotifications();
 
   }, []);
 

@@ -371,11 +371,11 @@ const BudgetRoom = () => {
 
 
   /// if not check data then navigate to pending page
+  if (loading) return <div> <Loading /></div>
   if (!checkUserPermision) {
     return <div> <Pending />  </div>
   }
 
-  if (loading) return <div> <Loading /></div>
   // console.log({ sessionId })
 
   // console.log({ memberRole })
