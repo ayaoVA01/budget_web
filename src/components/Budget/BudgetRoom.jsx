@@ -382,26 +382,31 @@ const BudgetRoom = () => {
 
   return (
     <div className='px-5 lg:max-w-[70rem] mx-auto'>
-      <div className='sticky top-0'>
+      <div className='sticky top-0 '>
         <Headers className='top-0' />
-        <Link to='/home' className='flex gap-2 text-gray-500 bg-white pt-3'>
+        {/* <Link to='/home' className='flex gap-2 text-gray-500 bg-white pt-3'>
           <LeftCircleTwoTone />
           back
-        </Link>
+        </Link> */}
 
-        <p className='pt-5 px-4 text-gray-500 text-sm bg-white'>
-          {roomData.description}
-        </p>
-        <div className='flex pt-4 justify-between bg-white'>
-          <div className='px-4 border-b'>
-            <p className='text-sm text-gray-500'>
-              Amount: ₩ <span className='text-blue-500 font-bold text-[20px]'>{roomData.budget_amount}</span>
+        <div className=''>
+
+          <div className=' space-y-4 sm:p-8  rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200'>
+            <p className='px-4 text-gray-500 text-sm bg-white'>
+              {roomData.description}
             </p>
-          </div>
-          <div className='border-b hover:border-blue-500 hover:text-blue-500'>
-            <button onClick={toggleVisibility} className='text-gray-500 text-sm p-4 hover:text-blue-500'>
-              Member
-            </button>
+            <div className='flex pt-4 justify-between bg-white'>
+              <div className='px-4 border-b'>
+                <p className='text-sm text-gray-500'>
+                  Amount: ₩ <span className='text-blue-500 font-bold text-[20px]'>{roomData.budget_amount}</span>
+                </p>
+              </div>
+              <div className='border-b hover:border-blue-500 hover:text-blue-500'>
+                <button onClick={toggleVisibility} className='text-gray-500 text-sm p-4 hover:text-blue-500'>
+                  Member
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
