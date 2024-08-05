@@ -9,31 +9,21 @@ import { Link } from "react-router-dom";
 import {
   PlusCircleFilled
 } from "@ant-design/icons";
+import { supabase } from "../services/supabaseClient";
 
 // import sendFCMNotification from "../components/Notifications/sendNotification.jsx";
-import requestFCMPermission from "../components/Notifications/requestFCMPermission.jsx";
+import requestFCMPermission from "../components/Notifications/requestFCMPermission";
 const Home = () => {
   // test no ti fi cation
-
-  const [token, setToken] = useState(null);
+  const addFCMtoken = async () => {
+    const userData = await supabase.auth.getSession();
+    requestFCMPermission(userData.data.session.user.id);
+  };
 
   useEffect(() => {
-    const fetchToken = async () => {
-      const fcmToken = await requestFCMPermission();
-      setToken(fcmToken);
-    };
-
-    fetchToken();
+    addFCMtoken();
   }, []);
-  console.log({ token })
 
-  // const handleSendNotification = () => {
-  //   if (token) {
-  //     sendFCMNotification(token, 'Test Notification', 'This is a test notification');
-  //   } else {
-  //     console.error('No FCM token available');
-  //   }
-  // };
   return (
     <>
       <div className="w-full h-[85vh] mx-auto sm:max-w-[70rem] md:mt-0 xl:p-0">
