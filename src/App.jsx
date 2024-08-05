@@ -1,6 +1,6 @@
 import './App.css';
 import React from 'react';
-import { ConfigProvider } from 'antd';
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Signup from './components/auth/Signup';
 import Login from './components/auth/Login';

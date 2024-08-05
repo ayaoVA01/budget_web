@@ -123,7 +123,7 @@ export default function Signup() {
     // }
     // };
     return (
-        <section className="bg-blue-500 lg:h-[40vh] h-[12rem]">
+        <section className="bg-blue-600/100 lg:h-[40vh] h-[12rem]">
             {success && (
                 <ResjisterSuccess
                     type="success"
@@ -134,7 +134,7 @@ export default function Signup() {
             )}
 
             <div className="flex w-full flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-                <div className="flex items-center lg:mt-[25rem] mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+                <div className="flex items-center lg:mt-[25rem] mb-6 text-2xl font-semibold text-white">
                     <img className="w-8 h-8 mr-2" src={logo} alt="logo" />
                     BUDGET
                 </div>

@@ -36,6 +36,7 @@ const requestFCMPermission = async (userId) => {
                         // Initialize Firebase Cloud Messaging
 
                         // Add the public VAPID key and service worker registration
+                        console.log({ pcmkey: process.env.FCM_PUBLIC_KEY })
                         getToken(messaging, { vapidKey: process.env.FCM_PUBLIC_KEY, serviceWorkerRegistration: registration })
                             .then(async (currentToken) => {
                                 if (currentToken) {

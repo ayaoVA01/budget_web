@@ -255,27 +255,57 @@ const BudgetRoom = () => {
         const myId = userData.data.session.user.id;
         console.log({ myId })
         const recipantTokens = roomMember
-          .filter(member => member.user_profile.user_id !== myId) // Exclude your own user ID
+          .filter(member => member.user_profile.user_id === myId) // Exclude your own user ID
           .map(member => member.user_profile.fcm_token);
         console.log({ recipantTokens })
-        const postNotiData = {
-          token: recipantTokens,
-          title: 'New Note Added',
-          body: `User ${userData.data.session.user.email} ${status} ${budget} in ${roomData.name}`
-        }
-        console.log({ postNotiData })
 
-        axios.post(`${FCM_API}/sendNotification`, postNotiData, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-          .then(response => {
-            console.log('Response:', response.data);
+
+        if (recipantTokens.length > 0) {
+          const postNotiData = {
+            token: recipantTokens,
+            title: 'New Note Added',
+            body: `User ${userData.data.session.user.email} ${status} ${budget} in ${roomData.budget_name}`
+          };
+
+
+
+          fetch(`${FCM_API}/sendNotification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(postNotiData)
           })
-          .catch(error => {
-            console.error('Error:', error);
-          });
+            .then(response => response.json())
+            .then(data => {
+              console.log('Response:', data);
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+          console.log({ postNotiData });
+        } else {
+          console.log('No recipient tokens available.');
+        }
+
+        // const postNotiData = {
+        //   token: recipantTokens,
+        //   title: 'New Note Added',
+        //   body: `User ${userData.data.session.user.email} ${status} ${budget} in ${roomData.budget_name}`
+        // }
+        // console.log({ postNotiData })
+
+        // axios.post(`${FCM_API}/sendNotification`, postNotiData, {
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   }
+        // })
+        //   .then(response => {
+        //     console.log('Response:', response.data);
+        //   })
+        //   .catch(error => {
+        //     console.error('Error:', error);
+        //   });
       }
       // console.log({ notiData })
 
@@ -419,10 +449,10 @@ const BudgetRoom = () => {
           back
         </Link> */}
 
-        <div className=''>
+        <div className='bg-white'>
 
           <div className=' space-y-4 sm:p-8  rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200'>
-            <p className='px-4 text-gray-500 text-sm bg-white'>
+            <p className='px-4 text-gray-500 text-sm '>
               {roomData.description}
             </p>
             <div className='flex pt-4 justify-between bg-white'>
@@ -484,6 +514,7 @@ const BudgetRoom = () => {
                       )}
                     </p>
                     <p className='p-3'>{items.description}</p>
+
                   </div>
                   <div>
                     <img className='w-[30px] h-[30px] object-contain rounded-[100%] border' src={avatar} alt="" />
