@@ -14,6 +14,9 @@ import Popup from '../popup/Popup';
 // import { data } from 'autoprefixer';
 const { Option } = Select;
 
+import axios from 'axios';
+import { FCM_API } from '../../constans.jsx'
+
 
 const BudgetRoom = () => {
   const [memberRole, setRole] = useState('MEMBER');
@@ -247,7 +250,34 @@ const BudgetRoom = () => {
       if (notiErr) {
         throw notiErr;
       }
-      console.log({ notiData })
+
+      if (notiData) {
+        const myId = userData.data.session.user.id;
+        console.log({ myId })
+        const recipantTokens = roomMember
+          .filter(member => member.user_profile.user_id !== myId) // Exclude your own user ID
+          .map(member => member.user_profile.fcm_token);
+        console.log({ recipantTokens })
+        const postNotiData = {
+          token: recipantTokens,
+          title: 'New Note Added',
+          body: `User ${userData.data.session.user.email} ${status} ${budget} in ${roomData.name}`
+        }
+        console.log({ postNotiData })
+
+        axios.post(`${FCM_API}/sendNotification`, postNotiData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+          .then(response => {
+            console.log('Response:', response.data);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+      }
+      // console.log({ notiData })
 
     } catch (error) {
       notification.error({
