@@ -14,6 +14,7 @@ const CreateBudget = () => {
   const [success, setSuccess] = useState({ success: false, id: null });
   const [error, setError] = useState(null);
   const [sessionId, setSessionId] = useState(null);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchSession = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -54,6 +55,7 @@ const CreateBudget = () => {
   };
 
   const onFinish = async (values) => {
+    setLoading(true);
     // console.log({ values })
     const { budgetname, budget, description } = values;
 
@@ -76,6 +78,7 @@ const CreateBudget = () => {
     if (error) {
       setError(error.message);
     } else {
+      setLoading(false);
       setSuccess({ success: true, id: data[0].id });
       handleReset();
     }
@@ -171,6 +174,7 @@ const CreateBudget = () => {
                       type="primary"
                       htmlType="submit"
                       className="p-5 font-medium px-[4rem]"
+                      loading={loading}
                     >
                       Submit
                     </Button>
@@ -181,7 +185,7 @@ const CreateBudget = () => {
           </div>
         </div>
       </div>
-    
+
     </div>
   )
 }
