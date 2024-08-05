@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../services/supabaseClient';
 import Headers from '../Layout/Header';
@@ -10,6 +10,7 @@ const ChangePassword = () => {
   const [success, setSuccess] = useState(false);
   const [form] = Form.useForm();
   const [sessionId, setSessionId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -35,6 +36,7 @@ const ChangePassword = () => {
   };
 
   const handleSubmit = async (values) => {
+    setLoading(true);
     const { oldpassword, newpassword, comfirmpassword } = values;
 
     if (newpassword !== comfirmpassword) {
@@ -77,6 +79,8 @@ const ChangePassword = () => {
         message: 'Error',
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -181,6 +185,7 @@ const ChangePassword = () => {
                         type="primary"
                         htmlType="submit"
                         className="p-5 font-medium px-[4rem]"
+                        loading={loading}
                       >
                         Submit
                       </Button>

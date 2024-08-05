@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, notification } from "antd";
 import { supabase } from "../../services/supabaseClient";
 import logo from '../../assets/images/logo.png';
 import ResjisterSuccess from './ResjisterSuccess';
@@ -10,6 +10,7 @@ export default function Signup() {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
 
     const handlePopupClose = () => {
         setSuccess(false);
@@ -28,8 +29,12 @@ export default function Signup() {
         setLoading(true);
         const { full_name, email, phone, password, confirmPassword } = values;
 
+
         if (password !== confirmPassword) {
-            alert("Passwords do not match");
+            notification.error({
+                message: 'Password do not match',
+                // description: err.message,
+            });
             setLoading(false);
             return;
         }
@@ -62,7 +67,13 @@ export default function Signup() {
             if (userProfileError) {
                 setLoading(false);
                 throw userProfileError;
+
             }
+            notification.success({
+                message: 'Sign up successfully! please login.',
+
+            });
+
 
             console.log('User updated successfully:', userProfile);
 
@@ -74,54 +85,17 @@ export default function Signup() {
         } catch (err) {
             setLoading(false);
             console.error(err.message || err.error_description);
-            alert('Registration failed. Please try again later.');
+
+            notification.error({
+                message: 'Registration failed!',
+                description: err.message,
+            });
+
         } finally {
             setLoading(false);
         }
     }
 
-    // try {
-    //     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-    //         email,
-    //         password,
-    //     });
-
-    //     if (signUpError) {
-    //         throw signUpError;
-    //     }
-
-    //     const user = signUpData.user;
-
-    //     console.log({ user })
-    //     console.log({ user: user.id })
-    //     if (!user) {
-    //         throw new Error('User data is missing.');
-    //     }
-
-    //     const { data: updateData, error: updateError } = await supabase
-    //         .from('aut.users')
-    //         .update({ full_name, phone })
-    //         .eq('id', user.id);
-
-    //     if (updateError) {
-    //         console.log("error: ", updateError);
-    //         throw updateError;
-    //     }
-    //     console.log({ data: updateData })
-
-    //     triggerPopup();
-    //     setTimeout(() => {
-    //         handlePopupClose();
-    //         navigate("/login");
-    //     }, 2000);
-
-    // } catch (err) {
-    //     console.error(err.message || err.error_description);
-    //     alert('Registration failed. Please try again later.');
-    // } finally {
-    //     setLoading(false);
-    // }
-    // };
     return (
         <section className="bg-blue-600/100 lg:h-[40vh] h-[12rem]">
             {success && (
@@ -155,7 +129,7 @@ export default function Signup() {
                                 className="text-gray-400"
                                 label={<span className="text-gray-400">Full name</span>}
                                 name="full_name"
-                                rules={[{ required: true, message: "Full name is required" }]}
+                                rules={[{ required: true, message: "" }]}
                             >
                                 <Input placeholder="Full name" className="w-full p-2.5" />
                             </Form.Item>
@@ -163,7 +137,7 @@ export default function Signup() {
                                 className="text-white"
                                 label={<span className="text-gray-400">Email</span>}
                                 name="email"
-                                rules={[{ required: true, message: "Email is required" }]}
+                                rules={[{ required: true, message: "" }]}
                             >
                                 <Input placeholder="Email" className="w-full p-2.5" />
                             </Form.Item>
@@ -171,7 +145,7 @@ export default function Signup() {
                                 className="text-gray-400"
                                 label={<span className="text-gray-400">Phone</span>}
                                 name="phone"
-                                rules={[{ required: false, message: "Phone number is optional" }]}
+                                rules={[{ required: false, message: "" }]}
                             >
                                 <Input placeholder="Phone" className="w-full p-2.5" />
                             </Form.Item>
@@ -179,7 +153,7 @@ export default function Signup() {
                                 className="username"
                                 label={<span className="text-gray-400">Password</span>}
                                 name="password"
-                                rules={[{ required: true, message: "Password is required" }]}
+                                rules={[{ required: true, message: "" }]}
                             >
                                 <Input.Password placeholder="Password" className="w-full p-2.5" />
                             </Form.Item>
@@ -187,10 +161,11 @@ export default function Signup() {
                                 className="confirmPassword"
                                 label={<span className="text-gray-400">Confirm Password</span>}
                                 name="confirmPassword"
-                                rules={[{ required: true, message: "Confirm password is required" }]}
+                                rules={[{ required: true, message: "" }]}
                             >
                                 <Input.Password placeholder="Confirm password" className="w-full p-2.5" />
                             </Form.Item>
+
 
                             <Form.Item>
                                 <Button

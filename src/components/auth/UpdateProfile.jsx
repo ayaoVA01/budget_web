@@ -250,8 +250,9 @@ const UpdateProfile = () => {
                                             type="primary"
                                             htmlType="submit"
                                             className="p-5 font-medium px-[4rem]"
+                                            loading={loading}
                                         >
-                                            {loading ? 'Loading...' : 'Update'}
+                                            Update
                                         </Button>
                                     </Form.Item>
                                 </div>

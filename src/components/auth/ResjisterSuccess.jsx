@@ -37,16 +37,16 @@ const ResjisterSuccess = ({ type, message: popupMessage, duration = 2000, onClos
                         <div>
                             <CheckCircleTwoTone className='text-[4rem]' />
                             <h3 className="text-xl font-normal text-blue-500 mt-5 mb-6">{popupMessage}</h3>
-                            
-                      <div className='flex gap-2 items-center'>
-<p className='text-gray-500 text-sm '>Please click the login for login.</p>
-                            <Link to='/login'
-                                
-                                className="text-gray-900 justify-end  bg-white hover:bg-gray-100 focus:ring-4 focus:ring-cyan-200 border border-gray-200 font-medium inline-flex items-center rounded-lg text-base px-3 py-2.5 text-center"
-                            >
-                                Login <RightCircleOutlined className='mx-2 text-blue-500' />
-                            </Link>
-                      </div>
+
+                            <div className='flex gap-2 items-center'>
+                                <p className='text-gray-500 text-sm '>Please click the login for login.</p>
+                                <Link to='/login'
+
+                                    className="text-gray-900 justify-end  bg-white hover:bg-gray-100 focus:ring-4 focus:ring-cyan-200 border border-gray-200 font-medium inline-flex items-center rounded-lg text-base px-3 py-2.5 text-center"
+                                >
+                                    Login <RightCircleOutlined className='mx-2 text-blue-500' />
+                                </Link>
+                            </div>
                         </div>
                     ) : (
                         <div>

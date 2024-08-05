@@ -42,12 +42,6 @@ const Home = () => {
                 <PlusCircleFilled className="text-[50px]  text-blue-500" />
               </Button>
             </Link>
-
-
-            <div>
-              <h1>React FCM Notification</h1>
-              {/* <button onClick={handleSendNotification}>Send Notification</button> */}
-            </div>
           </div>
         </div>
       </div>

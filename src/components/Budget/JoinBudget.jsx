@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Headers from '../Layout/Header';
 import { Link } from "react-router-dom";
 import Popup from '../popup/Popup';
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, notification } from "antd";
 import { LeftCircleTwoTone } from "@ant-design/icons";
 import { decodeKey } from '../../utils/BudgetRoomSecrete';
 import { useNavigate } from 'react-router-dom';
@@ -10,10 +10,12 @@ import { supabase } from '../../services/supabaseClient';
 
 
 import { data } from 'autoprefixer';
+import Loading from '../loading/Loading';
 const JoinBuget = () => {
   const [success, setSucces] = useState(false);
   const navigetor = useNavigate()
   const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false);
   // for reset form
   const [form] = Form.useForm();
   // const [sessionId, setSessionId] = useState(null);
@@ -42,6 +44,7 @@ const JoinBuget = () => {
   };
 
   const onFinish = async (values) => {
+    setLoading(true);
     const { data: sessionData, error: userError } = await supabase.auth.getSession();
     console.log("on finish")
     const { secretkey } = values;
@@ -68,6 +71,11 @@ const JoinBuget = () => {
       console.log({ userJoined })
       if (userJoined) {
         console.log("alreaedy joined")
+        notification.success({
+          message: 'Join Room successfully!',
+          // description: err.message,
+        });
+        setLoading(false);
         navigetor(window.open(`room/${verrifileBudget.id}`, '_blank'))
         // navigetor()
         // navigetor(`/room/${verrifileBudget.id}`)
@@ -99,8 +107,14 @@ const JoinBuget = () => {
             .select();
 
           console.log("create noti")
+          notification.success({
+            message: 'Join Room successfully!',
+            // description: err.message,
+          });
+
           console.log({ noti })
           navigetor(`/room/${verrifileBudget.id}`)
+          setLoading(false);
           handleReset();
         }
 
@@ -109,6 +123,8 @@ const JoinBuget = () => {
     } else {
       setError(error.message);
     }
+
+
   };
 
   return (
@@ -177,6 +193,7 @@ const JoinBuget = () => {
                         type="primary"
                         htmlType="submit"
                         className="w-full p-5 font-medium px-[4rem]"
+                        loading={loading}
                       >
                         Submit
                       </Button>

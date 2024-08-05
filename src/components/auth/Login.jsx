@@ -26,14 +26,14 @@ export default function Signin() {
 
             notification.success({
                 message: 'Login Successful',
-                description: `Welcome back, ${data.user.email}`,
+                description: `Welcome , ${data.user.email}`,
             });
 
             // Navigate to the home page or dashboard
             navigate('/home');
         } catch (err) {
             notification.error({
-                message: 'Login Failed',
+                message: 'Oop! Login Failed',
                 description: err.message,
             });
         } finally {
@@ -117,6 +117,7 @@ export default function Signin() {
                                     htmlType="submit"
 
                                     className="w-full p-5 font-medium"
+                                    loading={loading}
                                 >
                                     Sign In
                                 </Button>
