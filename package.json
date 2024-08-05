@@ -37,5 +37,8 @@
     "supabase": "^1.187.3",
     "tailwindcss": "^3.4.6",
     "vite": "^5.3.4"
+  },
+  "engines": {
+    "node": "16.0.0"
   }
 }
