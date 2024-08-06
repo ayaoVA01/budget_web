@@ -107,7 +107,6 @@ const Headers = () => {
       }
       // const latestNotification = initialNotifications.length > 0 ? initialNotifications[0] : null;
 
-      console.log('Fetching notifications', initialNotifications.user_profile.full_name)
 
       const notificationListener = supabase
         .channel('public:notification')

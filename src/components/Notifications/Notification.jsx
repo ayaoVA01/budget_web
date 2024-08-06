@@ -226,7 +226,7 @@ const NotificationPage = () => {
     // if (loading) {
     //     return <Loading />
     // }
-
+    console.log({ notifications })
     return (
         <>
             <Headers />
@@ -276,7 +276,7 @@ const NotificationPage = () => {
                                     >
                                         <Skeleton avatar title={false} loading={item.loading} active>
                                             <List.Item.Meta
-                                                avatar={<Avatar src={avatar} />}
+                                                avatar={<Avatar src={`${process.env.IMAGE_URL}${item.user_profile.image}`} />}
                                                 title={
                                                     <>
                                                         <div style={{ fontSize: '0.8em', color: 'gray' }}>

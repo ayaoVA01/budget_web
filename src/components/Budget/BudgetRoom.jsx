@@ -11,6 +11,7 @@ import { supabase } from '../../services/supabaseClient';
 import Loading from '../loading/Loading'
 import Pending from '../loading/Pending';
 import Popup from '../popup/Popup';
+
 // import { data } from 'autoprefixer';
 const { Option } = Select;
 
@@ -33,6 +34,7 @@ const BudgetRoom = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
+  const [imageUrl, setImageUrl] = useState(null);
   // console.log(roomId)
   //  fetch session id
   useEffect(() => {
@@ -442,26 +444,26 @@ const BudgetRoom = () => {
 
   return (
     <div className='px-5 lg:max-w-[70rem] mx-auto'>
-      <div className='sticky top-0 '>
-        <Headers className='top-0' />
+      <div className='sticky top-0 rounded-lg '>
+        {/* <Headers className='top-0' /> */}
         {/* <Link to='/home' className='flex gap-2 text-gray-500 bg-white pt-3'>
           <LeftCircleTwoTone />
           back
         </Link> */}
 
-        <div className='bg-white'>
+        <div className='bg-white border border-b-1 border-r-0 border-l-0 border-gray-200'>
 
-          <div className=' space-y-4 sm:p-8  rounded-lg border border-b-0 border-r-0 border-l-0 border-gray-200'>
+          <div className=' pt-6'>
             <p className='px-4 text-gray-500 text-sm '>
               {roomData.description}
             </p>
             <div className='flex pt-4 justify-between bg-white'>
-              <div className='px-4 border-b'>
+              <div className='px-4 '>
                 <p className='text-sm text-gray-500'>
                   Amount: ₩ <span className='text-blue-500 font-bold text-[20px]'>{roomData.budget_amount}</span>
                 </p>
               </div>
-              <div className='border-b hover:border-blue-500 hover:text-blue-500'>
+              <div className=' hover:border-blue-500 hover:text-blue-500'>
                 <button onClick={toggleVisibility} className='text-gray-500 text-sm p-4 hover:text-blue-500'>
                   Member
                 </button>
@@ -473,7 +475,7 @@ const BudgetRoom = () => {
 
 
 
-      <div className='mb-[10rem]'>
+      <div className='mb-[10rem]  '>
         <div className='float-end'>
           <Button className='p-5 fixed bottom-10 -ml-[3.5rem]' onClick={showModal}>
             <PlusCircleFilled className='text-blue-500' />
@@ -498,6 +500,7 @@ const BudgetRoom = () => {
 
 
         {noteData.map((items, index) => {
+          const imgurl = items.create_by.image;
           if (items.create_by.user_id === sessionId.user.id) {
             return (
               <div key={index}>
@@ -517,7 +520,7 @@ const BudgetRoom = () => {
 
                   </div>
                   <div>
-                    <img className='w-[30px] h-[30px] object-contain rounded-[100%] border' src={avatar} alt="" />
+                    <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={`${process.env.IMAGE_URL}${items.create_by.image}`} alt="" />
                   </div>
                 </div>
 
@@ -527,7 +530,7 @@ const BudgetRoom = () => {
             return (
               <div key={index} className='text-gray-500 text-sm mt-5 flex gap-2'>
                 <div>
-                  <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={avatar} alt="" />
+                  <img className='w-[30px] h-[30px] object-cover rounded-[100%] border' src={`${process.env.IMAGE_URL}${items.create_by.image}`} alt="" />
                 </div>
                 <div className='border-b'>
                   <p className='text-gray-700 font-medium'>{items.create_by.full_name}</p>
@@ -589,6 +592,7 @@ const BudgetRoom = () => {
                   <div>
 
                     {roomMember.map((items, index) => {
+
                       // console.log('items: ', items)
                       // console.log(profileData.id, 'hsudhauda ddata profile')
                       // if (items.member === profileData.id) {
@@ -596,7 +600,7 @@ const BudgetRoom = () => {
                         <div key={index} className='w-full px-4'>
                           <div className='flex w-full justify-between items-center my-2'>
                             <div className='flex gap-2 items-center'>
-                              <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
+                              <img src={`${process.env.IMAGE_URL}${items.user_profile.image}`} alt="image" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
                               <div>
                                 <p className='text-sm'>{items.user_profile.full_name}</p>
                                 <p className='text-sm text-blue-500'>{items.user_profile.phone}</p>
@@ -660,11 +664,12 @@ const BudgetRoom = () => {
                   <div>
                     {roomMember.map((items, index) => {
 
+
                       return (
                         <div key={index} className='w-full px-4'>
                           <div className='flex w-full justify-between items-center my-2'>
                             <div className='flex gap-2 items-center'>
-                              <img src={avatar} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
+                              <img src={`${process.env.IMAGE_URL}${items.user_profile.image}`} alt="" className='w-[30px] h-[30px] object-cover rounded-[100%] border' />
                               <div>
                                 <p className='text-sm'>{items.user_profile.full_name}</p>
                                 <p className='text-sm text-blue-500'>{items.user_profile.phone}</p>

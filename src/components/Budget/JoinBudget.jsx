@@ -76,10 +76,10 @@ const JoinBuget = () => {
           // description: err.message,
         });
         setLoading(false);
+        handleReset();
         navigetor(window.open(`room/${verrifileBudget.id}`, '_blank'))
         // navigetor()
         // navigetor(`/room/${verrifileBudget.id}`)
-        handleReset();
 
       } else {
         console.log("still not joined")
@@ -111,11 +111,10 @@ const JoinBuget = () => {
             message: 'Join Room successfully!',
             // description: err.message,
           });
-
-          console.log({ noti })
-          navigetor(`/room/${verrifileBudget.id}`)
+          setLoading(false);
           setLoading(false);
           handleReset();
+          navigetor(window.open(`room/${verrifileBudget.id}`, '_blank'))
         }
 
       }
