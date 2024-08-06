@@ -19,7 +19,7 @@ const Home = () => {
     const userData = await supabase.auth.getSession();
     const userHaveToken = await supabase.from('user_profile').select('fcm_token').eq('user_id', userData.data.session.user.id).single();
     // console.log({ userHaveToken })
-    if (!userHaveToken) {
+    if (!userHaveToken.data.fcm_token) {
       console.log('Request FCM Token');
       requestFCMPermission(userData.data.session.user.id);
     }
