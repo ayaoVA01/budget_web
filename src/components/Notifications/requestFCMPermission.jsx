@@ -42,9 +42,14 @@ const requestFCMPermission = async (userId) => {
                                 if (currentToken) {
                                     console.log('FCM Token:', currentToken);
 
-                                    const addFCMToken = await supabase.from('user_profile').update({ fcm_token: currentToken }).eq('user_id', userId).select().single();
+                                    // const userHaveToken = await supabase.from('user_profile').select('fcm_token').eq('user_id', userId).single();
+                                    // console.log({ userHaveToken })
+                                    await supabase.from('user_profile').update({ fcm_token: currentToken }).eq('user_id', userId).select().single();
+                                    // if (!userHaveToken) {
+                                    //     console.log('FCM Token added:', addFCMToken);
+                                    // }
+                                    console.log("Already set fcm token");
 
-                                    console.log('FCM Token added:', addFCMToken);
                                     return
                                 } else {
                                     console.log('No registration token available. Request permission to generate one.');

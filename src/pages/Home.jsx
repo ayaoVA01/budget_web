@@ -17,7 +17,13 @@ const Home = () => {
   // test no ti fi cation
   const addFCMtoken = async () => {
     const userData = await supabase.auth.getSession();
-    requestFCMPermission(userData.data.session.user.id);
+    const userHaveToken = await supabase.from('user_profile').select('fcm_token').eq('user_id', userData.data.session.user.id).single();
+    // console.log({ userHaveToken })
+    if (!userHaveToken) {
+      console.log('Request FCM Token');
+      requestFCMPermission(userData.data.session.user.id);
+    }
+    console.log("FCM token have requested");
   };
 
   useEffect(() => {

@@ -7,6 +7,7 @@ import { LeftCircleTwoTone } from "@ant-design/icons";
 import { decodeKey } from '../../utils/BudgetRoomSecrete';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabaseClient';
+import { FCM_API } from '../../constans.jsx'
 
 
 import { data } from 'autoprefixer';
@@ -18,19 +19,6 @@ const JoinBuget = () => {
   const [loading, setLoading] = useState(false);
   // for reset form
   const [form] = Form.useForm();
-  // const [sessionId, setSessionId] = useState(null);
-  // useEffect(() => {
-  //   const fetchSession = async () => {
-  //     const { data, error } = await supabase.auth.getSession();
-  //     if (error) {
-  //       console.error('Error fetching session:', error);
-  //     } else {
-  //       setSessionId(data.session.user.id);
-  //     }
-  //   };
-
-  //   fetchSession();
-  // }, []);
   const handleReset = () => {
     form.resetFields();
   };
@@ -112,10 +100,35 @@ const JoinBuget = () => {
             // description: err.message,
           });
 
-          console.log({ noti })
-          navigetor(`/room/${verrifileBudget.id}`)
-          setLoading(false);
-          handleReset();
+          if (noti) {
+            const recipant = await supabase.from('budget').select('*, owner(fcm_token)').eq('id', roomId).single();
+            console.log({ recipant: recipant.data.owner.fcm_token })
+            const postNotiData = {
+              token: [recipant.data.owner.fcm_token],
+              title: 'New user join room',
+              body: `User ${sessionData.session.user.email} joined ${verrifileBudget.budget_name}`
+            };
+
+            fetch(`${FCM_API}/sendNotification`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(postNotiData)
+            })
+              .then(response => response.json())
+              .then(data => {
+                console.log('Response:', data);
+              })
+              .catch(error => {
+                console.error('Error:', error);
+              });
+
+            // console.log({ noti })
+            navigetor(`/room/${verrifileBudget.id}`)
+            setLoading(false);
+            handleReset();
+          }
         }
 
       }
